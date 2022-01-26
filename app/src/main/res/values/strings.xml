@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">mdp</string>
+
+    <string name="tab_name1">Configuration</string>
+    <string name="tab_name2">Controller</string>
+    <string name="tab_name3">Communication</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>
