@@ -3,6 +3,11 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/MDP-Group-10-android/app/src/main/res/layout/activity_main.xml" value="0.6" />
+        <entry key="..\:/MDP-Group-10-android/app/src/main/res/layout/bluetooth_setup.xml" value="0.25416666666666665" />
+        <entry key="..\:/MDP-Group-10-android/app/src/main/res/layout/fragment_chat.xml" value="0.6" />
+        <entry key="..\:/MDP-Group-10-android/app/src/main/res/layout/fragment_controller.xml" value="0.25416666666666665" />
+        <entry key="..\:/MDP-Group-10-android/app/src/main/res/layout/fragment_placeholder.xml" value="0.25416666666666665" />
         <entry key="..\:/src/androidProjects/mdp/app/src/main/res/layout/activity_main.xml" value="0.22" />
         <entry key="..\:/src/androidProjects/mdp/app/src/main/res/layout/bluetooth_setup.xml" value="0.22" />
         <entry key="..\:/src/androidProjects/mdp/app/src/main/res/layout/fragment_chat.xml" value="0.18819655521783182" />
