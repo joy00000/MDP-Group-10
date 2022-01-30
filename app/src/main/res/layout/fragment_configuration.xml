@@ -9,8 +9,8 @@
 
     <Button
         android:id="@+id/bluetoothButton"
-        android:layout_width="159dp"
-        android:layout_height="43dp"
+        android:layout_width="160dp"
+        android:layout_height="50dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="24dp"
         android:backgroundTint="#2FC0DA"
@@ -18,5 +18,26 @@
         android:text="Bluetooth"
         android:textColor="#FFFFFF"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/resetButton"
+        android:layout_width="160dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="44dp"
+        android:layout_marginTop="24dp"
+        android:text="Reset Map"
+        android:backgroundTint="#FFA500"
+        app:layout_constraintStart_toEndOf="@+id/bluetoothButton"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/faceButton"
+        android:layout_width="160dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="40dp"
+        android:layout_marginTop="24dp"
+        android:text="Set obstacle face"
+        app:layout_constraintStart_toEndOf="@+id/resetButton"
         app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -14,7 +14,9 @@ import android.view.ViewGroup;
 import android.widget.Button;
 
 import com.example.mdp.BluetoothConfiguration;
+import com.example.mdp.MainActivity;
 import com.example.mdp.R;
+import com.example.mdp.map.Maze;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -28,6 +30,10 @@ public class ConfigurationFragment extends Fragment {
     private PageViewModel pageViewModel;
 
     Button bluetoothButton;
+    Button resetButton;
+    Button obstacleFaceButton;
+
+    Maze map;
 
     public ConfigurationFragment() {
         // Required empty public constructor
@@ -61,6 +67,9 @@ public class ConfigurationFragment extends Fragment {
         SharedPreferences sharedPreferences;
         View root =  inflater.inflate(R.layout.fragment_configuration, container, false);
         bluetoothButton = root.findViewById(R.id.bluetoothButton);
+        resetButton = root.findViewById(R.id.resetButton);
+        obstacleFaceButton = root.findViewById(R.id.faceButton);
+        map = MainActivity.getMap();
 
         bluetoothButton.setOnClickListener(new View.OnClickListener(){
             @Override
@@ -68,7 +77,20 @@ public class ConfigurationFragment extends Fragment {
                 Log.d(TAG, "hi");
                 Intent intent = new Intent(getActivity(), BluetoothConfiguration.class);
                 startActivity(intent);
+            }
+        });
 
+        resetButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view){
+                map.resetMap();
+            }
+        });
+
+        obstacleFaceButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view){
+                map.setObstacleFace();
             }
         });
 
