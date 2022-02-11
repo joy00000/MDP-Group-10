@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".tabs.ConfigurationFragment">
+    tools:context=".tabs.ConfigurationFragment"
+    android:background="#dcb6f2">
 
 
     <Button
@@ -38,6 +39,29 @@
         android:layout_marginStart="40dp"
         android:layout_marginTop="24dp"
         android:text="Set obstacle face"
+        android:backgroundTint="#FFA500"
         app:layout_constraintStart_toEndOf="@+id/resetButton"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/robotStartPtButton"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="24dp"
+        android:backgroundTint="#FFA500"
+        android:text="Set Robot Start Point"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/bluetoothButton" />
+
+    <Button
+        android:id="@+id/sendObstacleCoordButton"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:layout_marginStart="60dp"
+        android:layout_marginTop="26dp"
+        android:backgroundTint="#FFA500"
+        android:text="Send obstacle coordinates"
+        app:layout_constraintStart_toEndOf="@+id/robotStartPtButton"
+        app:layout_constraintTop_toBottomOf="@+id/resetButton" />
 </androidx.constraintlayout.widget.ConstraintLayout>

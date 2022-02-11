@@ -8,7 +8,11 @@ import androidx.lifecycle.ViewModelProvider;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.Toast;
 
+import com.example.mdp.MainActivity;
 import com.example.mdp.R;
 import com.example.mdp.tabs.PageViewModel;
 
@@ -22,6 +26,8 @@ public class ControllerFragment extends Fragment {
     private static final String TAG = "Controller Fragment";
 
     private PageViewModel pageViewModel;
+    ImageButton fwdButton, rightButton, leftButton, reverseButton;
+    private com.example.mdp.map.Maze map;
 
     public ControllerFragment() {
         // Required empty public constructor
@@ -49,7 +55,45 @@ public class ControllerFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_controller, container, false);
+        View root = inflater.inflate(R.layout.fragment_controller, container, false);
+
+        map = MainActivity.getMap();
+        fwdButton = root.findViewById(R.id.ForwardButton);
+        reverseButton = root.findViewById(R.id.ReverseButton);
+        leftButton = root.findViewById(R.id.LeftButton);
+        rightButton = root.findViewById(R.id.RightButton);
+
+        fwdButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view){
+                map.moveRobot("w");//prevention of movement outside of the map is done inside moveRobot function itself
+            }
+        });
+
+        reverseButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view){
+                map.moveRobot("s");
+            }
+        });
+
+        leftButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view){
+                map.moveRobot("a");
+            }
+        });
+
+        rightButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view){
+                map.moveRobot("d");
+            }
+        });
+
+
+
+
+        return root;
     }
 }

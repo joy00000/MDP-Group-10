@@ -16,10 +16,10 @@ public class Obstacle {
     int aObsX, aObsY;
     boolean actionDown = false;
     boolean longPress = false;
-    String obsFace = "None";
+    int obsFace = -1;
     String obsID, targetID;
 
-    public Obstacle(int x, int y, int initX, int initY, String obsID, int touchCount, String obsFace, String targetID){
+    public Obstacle(int x, int y, int initX, int initY, String obsID, int touchCount, int obsFace, String targetID){
         this.x = x;
         this.y = y;
         this.touchCount = touchCount;
@@ -59,7 +59,7 @@ public class Obstacle {
         System.out.println(initY);
         return new int [] {initX,initY};}
 
-    public String getObsFace(){
+    public int getObsFace(){
         return obsFace;
     }
 
@@ -97,27 +97,32 @@ public class Obstacle {
         this.initY = initY;
     }
 
-    public String setObsFace(int touchCount){
+    public int setObsFace(int touchCount){
         switch (touchCount){
             case 1:
                 //Green: Left (West)
-                obsFace = "North";
+//                obsFace = "North";
+                obsFace = 0;
                 break;
             case 2:
                 //Red: Right
-                obsFace = "East";
+//                obsFace = "East";
+                obsFace = 2;
                 break;
             case 3:
                 //Yellow: Down
-                obsFace = "South";
+//                obsFace = "South";
+                obsFace = 1;
                 break;
             case 4:
                 //Blue: Front
-                obsFace = "West";
+//                obsFace = "West";
+                obsFace = 3;
                 break;
             default:
                 //Black
-                obsFace = " ";
+//                obsFace = " ";
+                obsFace = -1;
         }
         this.obsFace = obsFace;
         return obsFace;
@@ -127,29 +132,35 @@ public class Obstacle {
         switch (touchCount){
             case 1:
                 //Green: Left (West)
-                obsFace = "North";
+//                obsFace = "North";
+                obsFace = 0;
                 canvas.drawLine(x, y + obsOffset1, x + offset, y + obsOffset1, paint);
                 break;
 
             case 2:
                 //Red: Right
-                obsFace = "East";
+//                obsFace = "East";
+                obsFace = 2;
                 canvas.drawLine(x + obsOffset2, y , x + obsOffset2, y + offset, paint);
                 break;
             case 3:
                 //Yellow: Down
-                obsFace = "South";
+//                obsFace = "South";
+                obsFace = 1;
                 canvas.drawLine(x, y + obsOffset2, x + offset, y + obsOffset2, paint);
                 break;
             case 4:
                 //Blue: Front
-                obsFace = "West";
+//                obsFace = "West";
+                obsFace = 3;
                 canvas.drawLine(x + obsOffset1, y , x + obsOffset1, y + offset, paint);
                 break;
             default:
                 //Black
-                obsFace = " ";
+//                obsFace = " ";
+                obsFace = -1;
         }
+
     }
 
     //Setting action down status

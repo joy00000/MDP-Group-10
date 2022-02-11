@@ -30,11 +30,12 @@ public class Maze extends View implements Serializable {
 
     private static Cell[][] cells;
     private static final int COLS = 20, ROWS = 20;
-    private static float cellSize, hMargin, vMargin;
+//    private static float cellSize, hMargin, vMargin;
+    private static float cellSize, xMgn, yMgn;
     private static String robotDirection = "north";
     private static int[] obsCoord = new int[]{-1, -1};
-    private static int[] curCoord = new int[]{-1, -1};
-    private static int[] oldCoord = new int[]{-1, -1};
+    private static int[] robotCoords = new int[]{-1, -1}; //these coordinates represent robotcoords, think i can change it to "robotCoordinates"
+    private static int[] oldRobotCoord = new int[]{-1, -1};
     private static ArrayList<int[]> obstacleCoord = new ArrayList<>();
 
     private static Obstacle [] obstacleList = new Obstacle[8];
@@ -58,7 +59,7 @@ public class Maze extends View implements Serializable {
 
     //Create only avail when state is true
     private static boolean createCellStatus = false;
-    private static boolean setRobotPostition = false;
+    private static boolean setRobotPosition = false;
     private static boolean changedFaceAnnotation = false;
     private static boolean validPosition = false;
     private static boolean canDrawRobot = false;
@@ -87,9 +88,10 @@ public class Maze extends View implements Serializable {
         init(attrs);
 
         wallPaint.setColor(Color.WHITE);
-        robotPaint.setColor(Color.parseColor("#bada55"));
+        robotPaint.setColor(Color.parseColor("#009999"));
         directionPaint.setColor(Color.BLACK);
-        unexploredPaint.setColor(Color.parseColor("#ccd8d7"));
+//        unexploredPaint.setColor(Color.parseColor("#ccd8d7"));
+        unexploredPaint.setColor(Color.parseColor("#E0E0E0"));
         exploredPaint.setColor(Color.GRAY);
         emptyPaint.setColor(Color.WHITE);
         virtualWallPaint.setColor(Color.parseColor("#FFA500"));
@@ -128,14 +130,21 @@ public class Maze extends View implements Serializable {
         longPressGestureListener = new LongPressGestureListener(this.mapView);
         mGestureDetector = new GestureDetectorCompat(context, longPressGestureListener);
 
-        obstacleList [0] = new Obstacle (670, 40, 670, 40,"1", 0, "None","1");
-        obstacleList [1] = new Obstacle(670, 115, 670, 115,"2", 0, "None", "2");
-        obstacleList [2] = new Obstacle(670, 190, 670, 190,"3", 0, "None", "3");
-        obstacleList [3] = new Obstacle(670, 265, 670, 265,"4", 0, "None", "4");
-        obstacleList [4] = new Obstacle(670, 340, 670, 340,"5", 0, "None", "5");
-        obstacleList [5] = new Obstacle(670, 410, 670, 410,"6", 0, "None", "6");
-        obstacleList [6] = new Obstacle(670, 485, 670, 485,"7", 0, "None", "7");
-        obstacleList [7] = new Obstacle(670, 565, 670, 565,"8", 0, "None", "8");
+        obstacleList [0] = new Obstacle (640, 40, 640, 40,"1", 0, -1,"1");
+        obstacleList [1] = new Obstacle(700, 40, 700, 40,"2", 0, -1, "2");
+        obstacleList [2] = new Obstacle(640, 190, 640, 190,"3", 0, -1, "3");
+        obstacleList [3] = new Obstacle(700, 190, 700, 190,"4", 0, -1, "4");
+        obstacleList [4] = new Obstacle(640, 340, 640, 340,"5", 0, -1, "5");
+        obstacleList [5] = new Obstacle(700, 340, 700, 340,"6", 0, -1, "6");
+        obstacleList [6] = new Obstacle(640, 485, 640, 485,"7", 0, -1, "7");
+        obstacleList [7] = new Obstacle(700, 485, 700, 485,"8", 0, -1, "8");
+//        obstacleList [1] = new Obstacle(670, 115, 670, 115,"2", 0, "None", "2");
+//        obstacleList [2] = new Obstacle(670, 190, 670, 190,"3", 0, "None", "3");
+//        obstacleList [3] = new Obstacle(670, 265, 670, 265,"4", 0, "None", "4");
+//        obstacleList [4] = new Obstacle(670, 340, 670, 340,"5", 0, "None", "5");
+//        obstacleList [5] = new Obstacle(670, 410, 670, 410,"6", 0, "None", "6");
+//        obstacleList [6] = new Obstacle(670, 485, 670, 485,"7", 0, "None", "7");
+//        obstacleList [7] = new Obstacle(670, 565, 670, 565,"8", 0, "None", "8");
 
     }
 
@@ -295,7 +304,7 @@ public class Maze extends View implements Serializable {
                         if (isInArena(coordinates)) {
                             Log.d(TAG, "C First: " + coordinates[0]);
                             Log.d(TAG, "C Second: " + coordinates[1]);
-                            //Jon commented this out, not sure what it does
+                            //Jon: commented this out, not sure what it does
 //                            isInCell(x,y);
                             obstacles.setObsMapCoord(coordinates[0], coordinates[1]);
                             obstacles.setaObsX(coordinates[0]);
@@ -314,7 +323,7 @@ public class Maze extends View implements Serializable {
 
 
                         } else {
-                            // Out of bounds
+                            // Set the obstacles back to the initial position if they are brought out of bounds
                             obstacles.setObsX(obstacles.getInitCoords()[0]);
                             obstacles.setObsY(obstacles.getInitCoords()[1]);
 
@@ -337,6 +346,17 @@ public class Maze extends View implements Serializable {
                     invalidate();
                 }
 
+                //if the setRobotPosition == true then the coordinates will be used to display the robots start pt
+                if(setRobotPosition == true){
+                    if(isInArena(coordinates)){
+                        if((coordinates[0] != 0 && coordinates[0] != 19) && (coordinates[1] != 0 && coordinates[1] != 19)){
+                            setRobotCoordinates(coordinates[0], coordinates[1]);
+
+                            invalidate();
+                        }
+                    }
+                }
+
                 break;
         }
 
@@ -346,12 +366,13 @@ public class Maze extends View implements Serializable {
         //return super.onTouchEvent(event);
     }
 
-    //this function isnt used
-    public String getObstacles(){
+    //this function is used to get a string message of the obstacles
+    public String getObstacleCoordString(){
         String obsDetailsString = "";
         for (Obstacle obstacles : obstacleList) {
 
-            if (!((obstacles.getaObsX() == 0) && (obstacles.getaObsY() == 0) && (obstacles.getObsFace().equals(" ")))){
+//            if (!((obstacles.getaObsX() == 0) && (obstacles.getaObsY() == 0) && (obstacles.getObsFace().equals(" ")))){
+            if (!((obstacles.getaObsX() == 0) && (obstacles.getaObsY() == 0) && (obstacles.getObsFace()== -1))){
 
                 Log.d(TAG, "x = " + obstacles.getaObsX());
                 Log.d(TAG, "y = " + obstacles.getaObsY());
@@ -370,7 +391,7 @@ public class Maze extends View implements Serializable {
 
     //Draw shapes on the canvas
     @Override
-    protected  void onDraw(Canvas canvas){
+    protected void onDraw(Canvas canvas){
         super.onDraw(canvas);
 
         //Set width and height of the canvas
@@ -379,22 +400,13 @@ public class Maze extends View implements Serializable {
 
         Log.d(TAG,"Width and Height: " + width + height);
 
-        //jon commented out these
-        //Calculate cellsize based on dimensions of the canvas
-//        if(width/height < COLS/ROWS){
-//            cellSize = width / (COLS + 1);
-//            Log.d(TAG,"Cell size 1: " + cellSize);
-//        } else {
-//            cellSize = height / (ROWS + 1);
-//            Log.d(TAG,"Cell size 2: " + cellSize);
-//        }
 
         cellSize = height/(ROWS + 1);
         Log.d(TAG,"The Cell's size: " + cellSize);
 
         //Calculate margin size of canvas
-        hMargin = ((width - COLS * cellSize) / 2 - 45);
-        vMargin = (height - ROWS * cellSize) / 2;
+        xMgn = ((width - COLS * cellSize) / 2 - 45);
+        yMgn = (height - ROWS * cellSize) / 2;
 
 
         //Create cell
@@ -405,12 +417,13 @@ public class Maze extends View implements Serializable {
             createCellStatus = true;
         }
 
-        //Set Margin
-        canvas.translate(hMargin, vMargin);
+        //Sets Margin
+        canvas.translate(xMgn, yMgn);
 
-        drawBorder(canvas);
+        drawCellBorders(canvas);
         drawCells(canvas);
         drawGridNumber(canvas);
+        drawRobot(canvas);
 
         for(Obstacle obstacles : obstacleList) {
             obstacles.drawObj(canvas);
@@ -432,7 +445,7 @@ public class Maze extends View implements Serializable {
     }
 
     //Draw border for each cell
-    private void drawBorder(Canvas canvas){
+    private void drawCellBorders(Canvas canvas){
         for (int x = 0; x < COLS; x++) {
             for (int y = 0; y < ROWS; y++) {
                 //Top
@@ -492,10 +505,10 @@ public class Maze extends View implements Serializable {
 
     //Resetting Arena by resetting everything
     public void resetMap(){
-        curCoord = new int [] {-1, -1};
+        robotCoords = new int [] {-1, -1};
         robotDirection = "north";
         createCellStatus = false;
-        setRobotPostition = false;
+        setRobotPosition = false;
         canDrawRobot = false;
 
         for (Obstacle obstacles : obstacleList){
@@ -509,7 +522,7 @@ public class Maze extends View implements Serializable {
             obstacles.setLongPress(false);
         }
 
-//        setStartingPoint(false);
+        setStartingPoint(false);
 //        MainActivity.setRobotDetails(-1, -1, "north");
         MainActivity.setXCoord(0);
         MainActivity.setyCoord(0);
@@ -566,27 +579,27 @@ public class Maze extends View implements Serializable {
         int row = -1, cols = -1;
         for (int i = 0; i < COLS; i++) {
             //this if condition is checking if the touch coord is in the range of the cell
-            if (cells[i][0].endX >= (x - hMargin) && cells[i][0].startX <= (x - hMargin)) {
+            if (cells[i][0].endX >= (x - xMgn) && cells[i][0].startX <= (x - xMgn)) {
                 cols = i;
                 Log.d(TAG, "SDATA startX = " + cells[i][0].startX);
                 Log.d(TAG, "SDATA endX = " + cells[i][0].endX);
                 Log.d(TAG, "SDATA cols = " + cols);
-                Log.d(TAG, "hMargin = " + hMargin);
+                Log.d(TAG, "horizontal margin = " + xMgn);
                 Log.d(TAG, "x = " + x);
-                Log.d(TAG, "hMargin = " + (x - hMargin));
+                Log.d(TAG, "horizontal margin = " + (x - yMgn));
                 break;
             }
         }
         for (int j = 0; j < ROWS; j++) {
             //this if condition is checking if the touch coord is in the range of the cell
-            if (cells[0][j].endY >= (y - vMargin) && cells[0][j].startY <= (y - vMargin)) {
+            if (cells[0][j].endY >= (y - yMgn) && cells[0][j].startY <= (y - yMgn)) {
                 row = j;
                 Log.d(TAG, "SDATA startY = " + cells[0][j].startY);
                 Log.d(TAG, "SDATA endY = " + cells[0][j].endY);
                 Log.d(TAG, "SDATA row = " + row);
-                Log.d(TAG, "hMargin = " + vMargin);
+                Log.d(TAG, "vertical margin = " + yMgn);
                 Log.d(TAG, "y = " + y);
-                Log.d(TAG, "hMargin = " + (y - vMargin));
+                Log.d(TAG, "vertical margin = " + (y - yMgn));
                 break;
             }
         }
@@ -642,7 +655,7 @@ public class Maze extends View implements Serializable {
                     this.paint = obstacleNumberPaint;
                     break;
                 default:
-                    Log.d(TAG,"setTtype default: " + type);
+                    Log.d(TAG,"setType default: " + type);
                     break;
             }
         }
@@ -684,6 +697,370 @@ public class Maze extends View implements Serializable {
         }
     }
 
+    //sets the obstacles face direction
+    public void setObstacleFace(){
+        Log.d(TAG,"setObstacleFace");
+        for (Obstacle obstacles : obstacleList) {
+            //Check if obstacle in touched.
+            if(obstacles.getLongPress()){
+                if(obstacles.getTouchCount() >= 5){
+                    obstacles.resetTouchCount();
+                    obstacles.setObsFace(obstacles.getTouchCount());
+                } else {
+                    obstacles.incrTouchCount();
+                    obstacles.setObsFace(obstacles.getTouchCount());
+                }
+            }
+        }
+        invalidate();
+    }
 
+    public void setRobotDirection(String direction){
+        Log.d(TAG,"setRobotDirection");
+        if(direction.equals("0")){
+            robotDirection = "north";
+        } else if (direction.equals("90")){
+            robotDirection = "east";
+        } else if (direction.equals("180")) {
+            robotDirection = "south";
+        } else if (direction.equals("270")){
+            robotDirection = "west";
+        }
+        Log.d(TAG,robotDirection);
+    }
+
+    public String getRobotDirection(){
+        return robotDirection;
+    }
+
+
+    private int[] getOldRobotCoord() {
+        return oldRobotCoord;
+    }
+
+    public boolean getCanDrawRobot() {
+        return canDrawRobot;
+    }
+
+    private void setOldRobotCoord(int oldCol, int oldRow) {
+        Log.d(TAG,"Entering setOldRobotCoord");
+        oldRobotCoord[0] = oldCol;
+        oldRobotCoord[1] = oldRow;
+
+        Log.d(TAG, oldCol + "," + oldRow);
+
+        //oldRow = this.inverseCoordinates(oldRow);
+        for (int x = oldRobotCoord[0] - 1; x <= oldRobotCoord[0] + 1; x++){
+            for (int y = oldRobotCoord[1] - 1; y <= oldRobotCoord[1] + 1; y++){
+                cells[x][y].setType("explored");
+            }
+        }
+        Log.d(TAG,"Exiting setOldRobotCoord");
+    }
+
+    //Get current robot Coordinates
+    public int[] getRobotCoords(){
+        return robotCoords;
+    }
+
+    //sets the robots coordinates
+    public void setRobotCoordinates(int col, int row) {
+        Log.d(TAG,"Entering setRobotCoord");
+        robotCoords[0] = col;
+        robotCoords[1] = row;
+
+        Log.d(TAG, col + "," + row);
+
+        for (int x = col - 1; x <= col + 1; x++)
+            for (int y = robotCoords[1] - 1; y <= robotCoords[1] + 1; y++)
+                cells[x][y].setType("robot");
+        Log.d(TAG,"Exiting setRobotCoord");
+    }
+
+    //Draw robot on canvas
+    private void drawRobot(Canvas canvas) {
+        Log.d(TAG,"Drawing Robot");
+        int robotCoordinates [] = getRobotCoords();
+        int x = robotCoordinates[0];
+        int y = robotCoordinates[1];
+        String direction = getRobotDirection();
+
+        if(x != -1 && y != -1){
+            float halfWidth = ((cells[x][y - 1].endX) - (cells[x][y - 1].startX)) / 2;
+
+            //row and col is the middle of the robot
+            Log.d(TAG,"drawRobot: Coordinates are= " + x + " , " + convertRow(y));
+
+            //Draw Robot box
+            canvas.drawRect(cells[x][y].startX, cells[x][y].startY, cells[x][y].endX, cells[x][y].endY, robotPaint);
+            canvas.drawRect(cells[x][y - 1].startX, cells[x][y - 1].startY, cells[x][y - 1].endX, cells[x][y - 1].endY, robotPaint);
+            canvas.drawRect(cells[x + 1][y].startX, cells[x + 1][y].startY, cells[x + 1][y].endX, cells[x + 1][y].endY, robotPaint);
+            canvas.drawRect(cells[x - 1][y].startX, cells[x - 1][y].startY, cells[x - 1][y].endX, cells[x - 1][y].endY, robotPaint);
+            canvas.drawRect(cells[x + 1][y - 1].startX, cells[x + 1][y - 1].startY, cells[x + 1][y - 1].endX, cells[x + 1][y - 1].endY, robotPaint);
+            canvas.drawRect(cells[x - 1][y - 1].startX, cells[x - 1][y - 1].startY, cells[x - 1][y - 1].endX, cells[x - 1][y - 1].endY, robotPaint);
+            canvas.drawRect(cells[x][y + 1].startX, cells[x][y + 1].startY, cells[x][y + 1].endX, cells[x][y + 1].endY, robotPaint);
+            canvas.drawRect(cells[x + 1][y + 1].startX, cells[x + 1][y + 1].startY, cells[x + 1][y + 1].endX, cells[x + 1][y + 1].endY, robotPaint);
+            canvas.drawRect(cells[x - 1][y + 1].startX, cells[x - 1][y + 1].startY, cells[x - 1][y + 1].endX, cells[x - 1][y + 1].endY, robotPaint);
+
+            //Robot direction (Arrow)
+            Path path = new Path();
+            Log.d(TAG,"Robot direction: " + direction);
+
+            //drawing the path
+            switch (direction){
+                case "north":
+                    path.moveTo(cells[x][y - 1].startX + halfWidth, cells[x][y - 1].startY); // Top
+                    path.lineTo(cells[x][y - 1].startX, cells[x][y - 1].endY); // Bottom left
+                    path.lineTo(cells[x][y - 1].endX, cells[x][y - 1].endY); // Bottom right
+                    path.lineTo(cells[x][y - 1].startX + halfWidth, cells[x][y - 1].startY); // Back to Top
+                    break;
+                case "south":
+                    path.moveTo(cells[x][y + 1].endX - halfWidth, cells[x][y + 1].endY); // Top
+                    path.lineTo(cells[x][y + 1].startX, cells[x][y + 1].startY); // Bottom left
+                    path.lineTo(cells[x + 1][y + 1].startX, cells[x +1][y + 1].startY); // Bottom right
+                    path.lineTo(cells[x][y + 1].endX - halfWidth, cells[x][y + 1].endY); // Back to Top
+                    break;
+                case "east":
+                    path.moveTo(cells[x+1][y].startX + (2*halfWidth), cells[x][y].startY + halfWidth); // Top
+                    path.lineTo(cells[x+1][y].startX, cells[x+1][y].startY); // Bottom left
+                    path.lineTo(cells[x+1][y+1].startX, cells[x+1][y+1].startY); // Bottom right
+                    path.lineTo(cells[x+1][y].startX + (2*halfWidth) , cells[x][y].startY + halfWidth); // Back to Top
+                    break;
+                case "west":
+                    path.moveTo(cells[x-1][y].startX, cells[x][y].startY + halfWidth); // Top
+                    path.lineTo(cells[x][y].startX, cells[x][y].startY); // Bottom left
+                    path.lineTo(cells[x][y + 1].startX, cells[x][y  +1].startY); // Bottom right
+                    path.lineTo(cells[x-1][y].startX, cells[x][y].startY + halfWidth); // Back to Top
+                    break;
+            }
+            path.close();
+            canvas.drawPath(path, directionPaint);
+
+            //After drawing, set drawing to false
+            setRobotPosition = false;
+//            MainActivity.setRobotDetails(x, inverseCoordinates(y), direction);
+        }
+    }
+
+//    function to receive message from rpi
+    public void updateMap(String message) {
+        Log.d(TAG,"updateMap: Updating Map!");
+
+        int robotCoordinates [] = getRobotCoords();
+        String receivedMessage [] = message.split(",");
+        String item = receivedMessage[0];
+        int x,y;
+        String obsID, targetID;
+        String direction, movement;
+
+        switch (item.toUpperCase()){
+            case "TARGET":
+                //Update obstacle by displaying image ID
+                obsID = receivedMessage[1];
+                targetID = receivedMessage[2];
+
+                updateTargetText(obsID, targetID);
+                break;
+            case "ROBOTPOSITION":
+                //Get new robot position
+                x = Integer.valueOf(receivedMessage[1]) + 1;
+                y = Integer.valueOf(receivedMessage[2]) + 1;
+                direction = receivedMessage[3];
+
+                Log.d(TAG, "New coordinates: " + x + "," + y);
+                Log.d(TAG, "Direction " + direction);
+
+//                moveRobot(x,y,direction);
+                break;
+            case "MOVE":
+                //Get robot movement
+                movement = receivedMessage[1];
+                Log.d(TAG, "updateMap: Move " + movement);
+
+//                moveRobot(movement);
+                break;
+        }
+    }
+
+    //Sets the starting point of the robot
+    public void setStartingPoint(boolean status){
+        canDrawRobot = true;
+        setRobotPosition = status;
+        Toast.makeText(getContext(), "Set robot start point enabled", Toast.LENGTH_LONG).show();
+    }
+
+
+    public void moveRobot(String movement){
+        Log.d(TAG,"Entering moveRobot");
+        setValidPosition(false);
+
+        int[] oldRobotCoord = this.getRobotCoords();
+        String currDirection = getRobotDirection();
+        String backupDirection = getRobotDirection();
+
+        int x = oldRobotCoord[0];
+        int y = oldRobotCoord[1];
+
+        Log.d(TAG, "onMoveRobot: Current coordinates => " + oldRobotCoord[0] + "," + oldRobotCoord[1]);
+        Log.d(TAG,"onMoveRobot: Current Robot direction => " + currDirection);
+
+//        Robot movement depends on the arrow/direction of the robot.
+        switch (currDirection) {
+            case "north":
+                //Ensure that center of the body is within this area
+                if((x != 0 && x != 19) && (y != 0 && y != 19)){
+                    validPosition = true;
+                }
+                switch (movement) {
+                    case "w": //"forward"
+                        if (robotCoords[1] != 1) {
+                            robotCoords[1] -= 1;
+                            validPosition = true;
+                            Toast.makeText(getContext(), "Robot: Moving Forward", Toast.LENGTH_LONG).show();
+                        } else {
+                            setValidPosition(false);
+                        }
+                        break;
+                    case "d": //"right"
+                        robotDirection = "east";
+                        Toast.makeText(getContext(), "Robot: Turning Right", Toast.LENGTH_LONG).show();
+                        break;
+                    case "s": //"back"
+                        if (robotCoords[1] != 18) {
+                            robotCoords[1] += 1;
+                            validPosition = true;
+                        } else {
+                            setValidPosition(false);
+                        }
+                        break;
+                    case "a": //"left"
+                        robotDirection = "west";
+                        Toast.makeText(getContext(), "Robot: Turning Left", Toast.LENGTH_LONG).show();
+                        break;
+                    default:
+                        robotDirection = "error up";
+                        Toast.makeText(getContext(), "Robot: Reverse", Toast.LENGTH_LONG).show();
+                        break;
+                }
+                break;
+            case "90":
+            case "east":
+                switch (movement) {
+                    case "w":
+                        if (robotCoords[0] != 18) {
+                            robotCoords[0] += 1;
+                            validPosition = true;
+                            Toast.makeText(getContext(), "Robot: Moving Forward", Toast.LENGTH_LONG).show();
+                        } else {
+                            setValidPosition(false);
+                        }
+                        break;
+                    case "d":
+                        robotDirection = "south";
+                        Toast.makeText(getContext(), "Robot: Turning Right", Toast.LENGTH_LONG).show();
+                        break;
+                    case "s":
+                        if (robotCoords[0] != 1) {
+                            robotCoords[0] -= 1;
+                            validPosition = true;
+                            Toast.makeText(getContext(), "Robot: Reverse", Toast.LENGTH_LONG).show();
+                        } else {
+                            setValidPosition(false);
+                        }
+                        break;
+                    case "a":
+                        robotDirection = "north";
+                        Toast.makeText(getContext(), "Robot: Turning Left", Toast.LENGTH_LONG).show();
+                        break;
+                    default:
+                        robotDirection = "error right";
+                }
+                break;
+            case "180":
+            case "south":
+                switch (movement) {
+                    case "w":
+                        if (robotCoords[1] != 18) {
+                            robotCoords[1] += 1;
+                            validPosition = true;
+                            Toast.makeText(getContext(), "Robot: Moving Forward", Toast.LENGTH_LONG).show();
+                        } else {
+                            setValidPosition(false);
+                        }
+                        break;
+                    case "d":
+                        robotDirection = "west";
+                        Toast.makeText(getContext(), "Robot: Turning Right", Toast.LENGTH_LONG).show();
+                        break;
+                    case "s":
+                        if (robotCoords[1] != 1) {
+                            robotCoords[1] -= 1;
+                            validPosition = true;
+                            Toast.makeText(getContext(), "Robot: Reverse", Toast.LENGTH_LONG).show();
+                        } else {
+                            setValidPosition(false);
+                        }
+                        break;
+                    case "a":
+                        robotDirection = "east";
+                        Toast.makeText(getContext(), "Robot: Turning Left", Toast.LENGTH_LONG).show();
+                        break;
+                    default:
+                        robotDirection = "error down";
+                }
+                break;
+            case "270":
+            case "west":
+                switch (movement) {
+                    case "w":
+                        if (robotCoords[0] != 1) {
+                            robotCoords[0] -= 1;
+                            validPosition = true;
+                            Toast.makeText(getContext(), "Robot: Moving Forward", Toast.LENGTH_LONG).show();
+                        } else {
+                            setValidPosition(false);
+                        }
+                        break;
+                    case "d":
+                        robotDirection = "north";
+                        Toast.makeText(getContext(), "Robot: Turning Right", Toast.LENGTH_LONG).show();
+                        break;
+                    case "s":
+                        if (robotCoords[0] != 18) {
+                            robotCoords[0] += 1;
+                            validPosition = true;
+                            Toast.makeText(getContext(), "Robot: Reverse", Toast.LENGTH_LONG).show();
+                        } else {
+                            setValidPosition(false);
+                        }
+                        break;
+                    case "a":
+                        robotDirection = "south";
+                        Toast.makeText(getContext(), "Robot: Turning Left", Toast.LENGTH_LONG).show();
+                        break;
+                    default:
+                        robotDirection = "error left";
+                }
+                break;
+            default:
+                robotDirection = "error moveCurCoord";
+                break;
+        }
+
+        if (getValidPosition()){
+            Log.d(TAG, String.valueOf(getValidPosition()));
+            Log.d(TAG,"onMoveRobot: Curr Coord is "+ robotCoords[0] + "," + robotCoords[1]);
+            setRobotCoordinates(robotCoords[0], robotCoords[1]);
+            setOldRobotCoord(x,y);
+        } else {
+            if (movement.equals("w") || movement.equals("s")){
+                robotDirection = backupDirection;
+                setRobotCoordinates(oldRobotCoord[0], oldRobotCoord[1]);
+            }
+            Log.d(TAG, "onMoveRobot: Old coordinates are " + oldRobotCoord[0] + "," + oldRobotCoord[1]);
+        }
+        this.invalidate();
+        Log.d(TAG,"Robot has been moved");
+    }
 
 }

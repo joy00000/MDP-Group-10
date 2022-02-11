@@ -13,10 +13,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
-import com.example.mdp.BluetoothConfiguration;
+import com.example.mdp.BluetoothConnectionService;
+import com.example.mdp.BluetoothPopUp;
 import com.example.mdp.MainActivity;
 import com.example.mdp.R;
 import com.example.mdp.map.Maze;
+
+import java.nio.charset.Charset;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -32,6 +35,8 @@ public class ConfigurationFragment extends Fragment {
     Button bluetoothButton;
     Button resetButton;
     Button obstacleFaceButton;
+    Button robotStartButton;
+    Button sendObstacleCoordButton;
 
     Maze map;
 
@@ -69,13 +74,32 @@ public class ConfigurationFragment extends Fragment {
         bluetoothButton = root.findViewById(R.id.bluetoothButton);
         resetButton = root.findViewById(R.id.resetButton);
         obstacleFaceButton = root.findViewById(R.id.faceButton);
+        robotStartButton = root.findViewById(R.id.robotStartPtButton);
+        sendObstacleCoordButton = root.findViewById(R.id.sendObstacleCoordButton);
         map = MainActivity.getMap();
+
+        //Button to send coordinates of obstacles to the RPI
+        sendObstacleCoordButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view){
+                Log.d(TAG, "attempting to send obstacle message");
+                String inputMessage =  map.getObstacleCoordString();
+                // write message
+                if (BluetoothConnectionService.BluetoothConnectionStatus == true) {
+                    byte[] bytes = inputMessage.getBytes(Charset.defaultCharset());
+                    BluetoothConnectionService.write(bytes);
+                }
+            }
+
+        });
+
+
 
         bluetoothButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view){
                 Log.d(TAG, "hi");
-                Intent intent = new Intent(getActivity(), BluetoothConfiguration.class);
+                Intent intent = new Intent(getActivity(), BluetoothPopUp.class);
                 startActivity(intent);
             }
         });
@@ -94,6 +118,13 @@ public class ConfigurationFragment extends Fragment {
             }
         });
 
+        robotStartButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view){
+                map.setStartingPoint(true);
+
+            }
+        });
 
         return root;
     }
