@@ -1,10 +1,11 @@
 #Code for RPi and Android communication 
 import time
 import bluetooth
+import os
 
 class android():
     def __init__(self):
-        self.rfcommchannel = 3
+        self.rfcommchannel = 1
         #Placeholder for Bluetooth RFCOMM socket
         self.socket = None
         
@@ -16,6 +17,9 @@ class android():
         
         #UUID for Serial Port Profile
         self.uuid = "00001101-0000-1000-8000-00805F9B34FB" 
+
+        os.system("sudo hciconfig hci0 piscan")
+        print("Finished bluetooth initialising")
 
     def connect(self):
         try: 
@@ -29,7 +33,6 @@ class android():
             
             #Listen to 1 bluetooth connection a
             self.socket.listen(1)
-            time.sleep(2)
 
             #Broadcast Bluetooth service
             bluetooth.advertise_service(self.socket, "MDPGrp10", service_id = self.uuid,
@@ -49,12 +52,15 @@ class android():
     def send(self, msg):
         try:
         #Send message
+            print(msg)
             self.client.send(msg)
+            print("done")
+        
         except Exception as e:
             ex = 'Bluetooth Write Error: ' + str(e)
             ex = ex +'\nRetry Connection\n'
             print(ex)
-            #self.connect()
+            self.connect()
             
     def read(self):
         try:

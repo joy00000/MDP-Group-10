@@ -5,7 +5,6 @@ import struct
 from PIL import Image
 from androidComm import *
 from stmComm import *
-#from imageComm import *
 from picamera import PiCamera
 
 
@@ -26,6 +25,7 @@ class RPI(threading.Thread):
         
         # save camera to class
         self.camera = None
+        self.imgCount = 0
 
     #Function to receive from PC (images)    
     def readFromPC(self):
@@ -34,62 +34,62 @@ class RPI(threading.Thread):
             msg = self.pc_obj.readImg()  
             if(msg):
                 print("Message received from PC is: " + str(msg))
-    
-        '''
-        if(str(msg) == "CAPTURE IMAGE"):
-            self.sendToPC()
-        elif(str(msg)[0] == "MOVE"): #“MOVE, FORWARD” “MOVE, LEFT BACKWARD”
-            self.sendToSTM(str(msg))
-        '''  
+                if (msg == "RESEND"):
+                    self.imgCount-=1
+                    self.sendToPC()
+                #self.sendToAndroid(str(msg))
+                
+    #Function to send to PC
+    def sendToPC(self):
+        stream = self.takePic()
+        print("in sendToPC function...")
+        if(stream):
+            #print(stream)
+            self.imgCount+=1
+            self.pc_obj.sendImg(stream, self.imgCount)
+            #print("Message send to PC is " + msgToPC)
+
     def readFromAlgo(self):
-        print("in readFromPC function...")
+        print("in readFromAlgo function...")
         while True:
             msg = self.pc_obj.readAlgo()  
             if(msg):
-                print("Message received from PC is: " + str(msg))
+                print("Message received from Algo is: " + str(msg))
+                '''
+                if(str(msg) == "CAPTURE IMAGE"):
+                    self.sendToPC()
+                elif(str(msg)[0:4] == "MOVE"): #“MOVE, FORWARD” “MOVE, LEFT BACKWARD”
+                    self.sendToSTM(str(msg))
+                    '''
     
-    #Function to send to PC
-    def sendToPC(self):
-        
-        '''self.camera = PiCamera()
-        self.camera.resolution = (640, 640)
-        self.camera.start_preview()
-        # Camera warm-up time
-        time.sleep(1)
-        stream = io.BytesIO()
-        
-        self.camera.capture(stream, 'jpeg')
-        stream.seek(0)
-        stream = stream.read()'''
-        stream = self.takePic()
-
-        if(stream):
-            #print(stream)
-            self.pc_obj.send(stream)
-            #print("Message send to PC is " + msgToPC)
-    
-    def sendToAlgo(self, msgToAlgo):
-        if(msgToAlgo):
-            self.pc_obj.send(msgToAlgo)
-            print("Message send to Algo is " + msgToAlgo)
+    def sendToAlgo(self):
+        #msgToAlgo1 = "ADDOBSTACLE"
+        #msgToAlgo2 = "hellohello"
+        #if(msgToAlgo1):
+        msgs = ["obstacle", "hello"]
+        for i in msgs:
+            print("in sendToAlgo function...")
+            self.pc_obj.sendAlgo(i)
+            #print("Message send to Algo is " + msgToAlgo)
 
     #Send function to android
     def sendToAndroid(self, msgToAndroid):
-        if(msgToAndroid):
+        #msg = input("type msg: ")
+        if (msgToAndroid):
             self.android_obj.send(msgToAndroid)
-            print("Message send to Android is " + msgToAndroid)
+            #print("Message send to Android is " + msgToAndroid)
 
     #Function to receive from Android
     def readFromAndroid(self):
         while True:
-            androidmsg = str(self.android_obj.read())
-            print("Message received from android is: %s" %androidmsg)
-
+            androidmsg = self.android_obj.read()
             if(androidmsg):
+                print("Message received from android is: " + str(androidmsg))
+            '''
                 self.sendToAlgo(androidmsg)
-                print("sent to algo")
+                print("sent to algo")'''
 
-    #Send Function to STM -> need to amend!
+    #Send Function to STM 
     def sendToSTM(self, msgToSTM):
         while True: 
             #msgToSTM = input("Type message:")
@@ -120,20 +120,20 @@ class RPI(threading.Thread):
     def start_threads(self):
         #send/write threads for pc, STM and android
         #pc_send_thread = threading.Thread(target=self.sendToPC, args=(), name="pc_send")
-        #algo_send_thread = threading.Thread(target=self.sendToAlgo, args=(), name="algo_send")
+        algo_send_thread = threading.Thread(target=self.sendToAlgo, args=(), name="algo_send")
         #STM_send_thread = threading.Thread(target=self.sendToSTM, args=(), name="STM_send")
         #android_send_thread = threading.Thread(target=self.sendToAndroid, args=(), name="android_send")
         
         #read threads for pc, STM and android
-        pc_read_thread = threading.Thread(target=self.readFromPC, args=(), name="pc_read")
+        #pc_read_thread = threading.Thread(target=self.readFromPC, args=(), name="pc_read")
         algo_read_thread = threading.Thread(target=self.readFromAlgo, args=(), name="algo_read")
         #STM_read_thread = threading.Thread(target=self.readFromSTM, args=(), name="STM_read")
         #android_read_thread = threading.Thread(target=self.readFromAndroid, args=(), name="android_read")
 
         #set as daemon (all threads)
         #pc_send_thread.daemon = True
-        #algo_send_thread.daemon = True
-        pc_read_thread.daemon = True
+        algo_send_thread.daemon = True
+        #pc_read_thread.daemon = True
         algo_read_thread.daemon = True
         #STM_send_thread.daemon = True
         #STM_read_thread.daemon = True
@@ -141,10 +141,10 @@ class RPI(threading.Thread):
         #android_read_thread.daemon = True
 
         #start threads -> dont start send threads!
-        pc_read_thread.start()
+        #pc_read_thread.start()
         algo_read_thread.start()
         #pc_send_thread.start()
-        #algo_send_thread.start()
+        algo_send_thread.start()
         #STM_read_thread.start()
         #STM_send_thread.start()
         #android_read_thread.start()

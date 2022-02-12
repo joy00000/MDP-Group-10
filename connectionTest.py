@@ -20,11 +20,13 @@ def main():
     
     #send
     
-    while True:
-        msg = input("Enter message: ")
-        msg = msg + "\n"
-        sock.send(bytes(msg, 'utf-8'))
-    
+    #while True:
+    '''msg = input("Enter message: ")
+    msg = msg + "\n"
+    sock.sendall(bytes(msg, 'utf-8'))'''
+    bytes_read = sock.recv(1024) 
+    print(str(bytes_read.decode("utf-8")))
+
     sock.close()
     
     '''
@@ -33,15 +35,15 @@ def main():
 
     with open('out.jpg', "wb") as f:
         while True:
-            # read 1024 bytes from the socket (receive)  
-            bytes_read = sock.recv(1024) #experiment with this to get fastest time!!
+            #read 1024 bytes from the socket (receive)  
+            bytes_read = sock.recv(1024) 
             if not bytes_read:
                 # file transmitting is done
                 break
             # write to the file the bytes we just received
             f.write(bytes_read)
             progress.update(len(bytes_read))
-    print("received")
+    print("received")'''
     '''
 
     
@@ -49,7 +51,7 @@ def main():
 
 #-------------------------------------Android test-----------------------------------
 
-'''def main():
+def main():
 
     bt_test = android()
      
@@ -57,8 +59,8 @@ def main():
     bt_test.connect()
      
     #Receive from Android
-    #andrmsg = bt_test.read()
-    #print(andrmsg)
+    andrmsg = bt_test.read()
+    print(andrmsg)
     
     #Send to Android
     #andrmsg = bt_test.read()
@@ -66,7 +68,8 @@ def main():
     bt_test.send(msg)
 
     #Terminate connection
-    bt_test.close()'''
+    bt_test.close()
+'''
     
 
 if __name__ == "__main__":

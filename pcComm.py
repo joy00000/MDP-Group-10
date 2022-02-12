@@ -17,7 +17,6 @@ class pc():
         self.pcClient = None
         self.pcClientIP = None
         self.connectionCount = 0
-
         self.algoClient = None
         self.algoClientIP = None
     
@@ -34,19 +33,24 @@ class pc():
 
                 self.serverSocket.listen(2)
                 print('Start listening for PC')
-                
+                '''
                 #connect to image rec server
                 self.pcClient, self.pcClientIP = self.serverSocket.accept()
                 self.isConnected = True
                 print('RPi connected with PC from ' + str(self.pcClient))
                 self.connectionCount+=1
                 print('Connection: ' + str(self.connectionCount))
+                '''
                 
                 #connect to algo server
                 self.algoClient, self.algoClientIP = self.serverSocket.accept()
-                print('RPi connected with PC from ' + str(self.algoClient))
+                print('RPi connected with ALGO from ' + str(self.algoClient))
                 self.connectionCount+=1
-                print('Connection: ' + str(self.connectionCount))
+                print('Connection: ' + str(self.connectionCount) + str(self.algoClientIP))
+                self.isConnected = True
+                
+                
+                
 
         except Exception as e:
             print('Connection Error: ' + str(e))
@@ -60,23 +64,25 @@ class pc():
         except Exception as err:
             print(err)
             self.connect()
-            self.read() 
+            self.readImg() 
 
     def readAlgo(self):
         try:
-            msg = self.pcClient1.recv(1024).decode('utf-8')
+            msg = self.algoClient.recv(1024).decode('utf-8')
             #print("Message: " + msg) 
             return msg
         
         except Exception as err:
             print(err)
-            self.connect()
-            self.read()  
+            #self.connect()
+            #self.readAlgo()  
     
-    def send(self, im):
+    def sendImg(self, im, imgCount):
         try:
             if(im != ""):
                 if (self.isConnected == True):
+                    imgNum = "Image"+ str(imgCount)
+                    self.pcClient.send(imgNum.encode('utf-8'))
                     self.pcClient.sendall(im)
                     return True
                 else:
@@ -88,7 +94,24 @@ class pc():
         except Exception as e:
             print('Sending pic error: ' + str(e))
             self.connect()
-            self.send(im)
+            self.sendImg(im, imgCount)
+    
+    def sendAlgo(self, algoMsg):
+        print("in send")
+        try:
+            if(algoMsg):
+                if self.isConnected:
+                    self.algoClient.send(algoMsg.encode('utf-8'))
+                    print("done")
+                else:
+                    if (self.isConnected != True):
+                        self.connect()
+                    return False
+
+        except Exception as e:
+            print('Sending algo error: ' + str(e))
+            #self.connect()
+            self.sendAlgo(algoMsg)
 
     def disconnect(self):
         try:
