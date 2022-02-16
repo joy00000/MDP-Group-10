@@ -28,16 +28,18 @@ class RPI(threading.Thread):
         self.imgCount = 0
 
     #Function to receive from PC (images)    
-    def readFromPC(self):
+    def readFromPC(self, targetid):
         print("in readFromPC function...")
         while True:
             msg = self.pc_obj.readImg()  
             if(msg):
+                msg = str(msg)
                 print("Message received from PC is: " + str(msg))
                 if (msg == "RESEND"):
                     self.imgCount-=1
                     self.sendToPC()
-                #self.sendToAndroid(str(msg))
+                elif (msg[0:7]=="TARGET"):
+                    self.sendToAndroid(msg)
                 
     #Function to send to PC
     def sendToPC(self):
@@ -55,26 +57,22 @@ class RPI(threading.Thread):
             msg = self.pc_obj.readAlgo()  
             if(msg):
                 print("Message received from Algo is: " + str(msg))
-                '''
-                if(str(msg) == "CAPTURE IMAGE"):
-                    self.sendToPC()
-                elif(str(msg)[0:4] == "MOVE"): #“MOVE, FORWARD” “MOVE, LEFT BACKWARD”
-                    self.sendToSTM(str(msg))
-                    '''
+                msg = str(msg)
+                if(msg == "CAPTURE IMAGE"):
+                    self.sendToPC(msg)
+                elif(msg[0:4] == "MOVE"): #“MOVE, FORWARD” “MOVE, LEFT BACKWARD”
+                    self.sendToSTM(msg)
     
-    def sendToAlgo(self):
+    def sendToAlgo(self, algomsg):
         #msgToAlgo1 = "ADDOBSTACLE"
         #msgToAlgo2 = "hellohello"
-        #if(msgToAlgo1):
-        msgs = ["obstacle", "hello"]
-        for i in msgs:
+        if(algomsg):
             print("in sendToAlgo function...")
-            self.pc_obj.sendAlgo(i)
+            self.pc_obj.sendAlgo(str(algomsg))
             #print("Message send to Algo is " + msgToAlgo)
 
     #Send function to android
     def sendToAndroid(self, msgToAndroid):
-        #msg = input("type msg: ")
         if (msgToAndroid):
             self.android_obj.send(msgToAndroid)
             #print("Message send to Android is " + msgToAndroid)
@@ -85,9 +83,10 @@ class RPI(threading.Thread):
             androidmsg = self.android_obj.read()
             if(androidmsg):
                 print("Message received from android is: " + str(androidmsg))
-            '''
-                self.sendToAlgo(androidmsg)
-                print("sent to algo")'''
+                androidmsg = str(androidmsg)
+                if(androidmsg [0:11] == "ADDOBSTACLE"):
+                    self.sendToAlgo(androidmsg)
+                    print("sent to algo")
 
     #Send Function to STM 
     def sendToSTM(self, msgToSTM):
@@ -101,8 +100,7 @@ class RPI(threading.Thread):
     def readFromSTM(self):
         while True:
             STMmsg = str(self.STM_obj.read())         
-            #y for sensor value, f for feedback
-            if(STMmsg != '\n'):
+            if(STMmsg):
                 print("Message received from STM is: " + STMmsg)
     
     def takePic(self):
