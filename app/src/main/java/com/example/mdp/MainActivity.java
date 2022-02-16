@@ -1,11 +1,16 @@
 package com.example.mdp;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.viewpager.widget.ViewPager;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.TextView;
 
 import com.example.mdp.adapter.SectionsPagerAdapter;
@@ -19,6 +24,7 @@ public class MainActivity extends AppCompatActivity {
     private static SharedPreferences sharedPrefs;
     private static SharedPreferences.Editor editor;
     private static Context context;
+    private static final String TAG = "GRIDMAP";
 
     private static Maze gridMap;
 
@@ -33,6 +39,8 @@ public class MainActivity extends AppCompatActivity {
         gridMap =new Maze(this);
         gridMap = findViewById(R.id.mapView);
 
+        //
+        LocalBroadcastManager.getInstance(this).registerReceiver(messageReceiver, new IntentFilter("incomingMessage"));
 
         //setting up the tab layout with controls etc
         SectionsPagerAdapter sectionsPagerAdapter = new SectionsPagerAdapter(this, getSupportFragmentManager());
@@ -60,4 +68,13 @@ public class MainActivity extends AppCompatActivity {
     public static void setyCoord(int y){
         yCoord.setText(String.valueOf(y));
     }
+
+    BroadcastReceiver messageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String message = intent.getStringExtra("receivedMessage");
+            Log.d(TAG,message);
+            gridMap.updateMap(message);
+        }
+    };
 }

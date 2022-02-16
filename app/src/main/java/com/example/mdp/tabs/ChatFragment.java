@@ -22,6 +22,7 @@ import android.widget.TextView;
 
 import com.example.mdp.BluetoothConnectionService;
 import com.example.mdp.R;
+import com.example.mdp.map.Maze;
 
 import java.nio.charset.Charset;
 
@@ -40,7 +41,6 @@ public class ChatFragment extends Fragment {
     public static ProgressDialog myDialog;;
     SharedPreferences sharedPreferences;
     SharedPreferences.Editor editor;
-
     private PageViewModel pageViewModel;
 
     public ChatFragment() {
@@ -76,12 +76,10 @@ public class ChatFragment extends Fragment {
         SharedPreferences sharedPreferences;
 
         View root =  inflater.inflate(R.layout.fragment_chat, container, false);
-
         showReceived = root.findViewById(R.id.showReceived);
         inputMessage = root.findViewById(R.id.inputMessage);
         sendButton = root.findViewById((R.id.sendButton));
 //        trying getContext() in the getInstance
-        LocalBroadcastManager.getInstance(getContext()).registerReceiver(messageReceiver, new IntentFilter("incomingMessage"));
 
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -105,6 +103,7 @@ public class ChatFragment extends Fragment {
         public void onReceive(Context context, Intent intent) {
             String message = intent.getStringExtra("receivedMessage");
             Log.d(TAG,message);
+//            gridMap.updateMap(message);
             showReceived.setText(message);
         }
     };

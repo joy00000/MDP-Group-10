@@ -3,6 +3,7 @@ package com.example.mdp.map;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.util.Log;
 
 public class Obstacle {
@@ -18,6 +19,8 @@ public class Obstacle {
     boolean longPress = false;
     int obsFace = -1;
     String obsID, targetID;
+    Paint obstacleNumberPaint = new Paint();
+
 
     public Obstacle(int x, int y, int initX, int initY, String obsID, int touchCount, int obsFace, String targetID){
         this.x = x;
@@ -28,6 +31,18 @@ public class Obstacle {
         this.targetID = targetID;
         this.initX = initX;
         this.initY = initY;
+        this.obstacleNumberPaint.setColor(Color.WHITE);
+        this.obstacleNumberPaint.setTextSize(13);
+        this.obstacleNumberPaint.setTypeface(Typeface.DEFAULT_BOLD);
+        this.obstacleNumberPaint.setAntiAlias(true);
+        this.obstacleNumberPaint.setStyle(Paint.Style.FILL);
+        this.obstacleNumberPaint.setTextAlign(Paint.Align.LEFT);
+    }
+    public float getPaintTextSize(){
+        return this.obstacleNumberPaint.getTextSize();
+    }
+    public void setPaintTextSize(int size){
+        this.obstacleNumberPaint.setTextSize(size);
     }
 
     public int getObsX(){

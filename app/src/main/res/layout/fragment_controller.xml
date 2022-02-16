@@ -4,47 +4,49 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Controller.ControllerFragment">
+    tools:context=".Controller.ControllerFragment"
+    android:background="#dcb6f2">
 
     <!-- TODO: Update blank fragment layout -->
 
     <ImageButton
         android:id="@+id/RightButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="79dp"
-        android:layout_marginTop="56dp"
+        android:layout_width="85dp"
+        android:layout_height="85dp"
+        android:layout_marginStart="80dp"
+        android:layout_marginTop="84dp"
         android:src="@drawable/right_arrow"
         app:layout_constraintStart_toEndOf="@+id/LeftButton"
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageButton
+        android:id="@+id/ReverseButton"
+        android:layout_width="85dp"
+        android:layout_height="85dp"
+        android:layout_marginStart="252dp"
+        android:layout_marginTop="56dp"
+        android:src="@drawable/reverse_arrow"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ForwardButton" />
+
+    <ImageButton
         android:id="@+id/ForwardButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="80dp"
+        android:layout_width="85dp"
+        android:layout_height="85dp"
+        android:layout_marginStart="252dp"
+        android:layout_marginTop="12dp"
         android:src="@drawable/forward_arrow"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageButton
         android:id="@+id/LeftButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="4dp"
-        android:layout_marginTop="56dp"
+        android:layout_width="85dp"
+        android:layout_height="85dp"
+        android:layout_marginStart="168dp"
+        android:layout_marginTop="84dp"
         android:src="@drawable/left_arrow"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
-    <ImageButton
-        android:id="@+id/ReverseButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="80dp"
-        android:layout_marginTop="48dp"
-        android:src="@drawable/reverse_arrow"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ForwardButton" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

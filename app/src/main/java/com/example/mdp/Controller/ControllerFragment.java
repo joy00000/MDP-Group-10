@@ -12,9 +12,12 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
+import com.example.mdp.BluetoothConnectionService;
 import com.example.mdp.MainActivity;
 import com.example.mdp.R;
 import com.example.mdp.tabs.PageViewModel;
+
+import java.nio.charset.Charset;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -66,28 +69,44 @@ public class ControllerFragment extends Fragment {
         fwdButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view){
-                map.moveRobot("w");//prevention of movement outside of the map is done inside moveRobot function itself
+                map.moveRobot("forward");//prevention of movement outside of the map is done inside moveRobot function itself
+                if (BluetoothConnectionService.BluetoothConnectionStatus == true) {
+                    byte[] bytes = "forward".getBytes(Charset.defaultCharset());
+                    BluetoothConnectionService.write(bytes);
+                }
             }
         });
 
         reverseButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view){
-                map.moveRobot("s");
+                map.moveRobot("reverse");
+                if (BluetoothConnectionService.BluetoothConnectionStatus == true) {
+                    byte[] bytes = "reverse".getBytes(Charset.defaultCharset());
+                    BluetoothConnectionService.write(bytes);
+                }
             }
         });
 
         leftButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view){
-                map.moveRobot("a");
+                map.moveRobot("left");
+                if (BluetoothConnectionService.BluetoothConnectionStatus == true) {
+                    byte[] bytes = "left".getBytes(Charset.defaultCharset());
+                    BluetoothConnectionService.write(bytes);
+                }
             }
         });
 
         rightButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view){
-                map.moveRobot("d");
+                map.moveRobot("right");
+                if (BluetoothConnectionService.BluetoothConnectionStatus == true) {
+                    byte[] bytes = "right".getBytes(Charset.defaultCharset());
+                    BluetoothConnectionService.write(bytes);
+                }
             }
         });
 

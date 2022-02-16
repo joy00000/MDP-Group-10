@@ -4,7 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".tabs.ChatFragment">
+    tools:context=".tabs.ChatFragment"
+    android:background="#dcb6f2">
 
     <LinearLayout
         android:id="@+id/linearLayout"
@@ -16,31 +17,62 @@
         tools:ignore="NotSibling">
 
 
-        <androidx.appcompat.widget.Toolbar
-            android:layout_width="match_parent"
+        <LinearLayout
+            android:id="@+id/receiveSection"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="#039BE5"
-            android:orientation="horizontal"/>
+            android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/showReceived"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="TextView" />
+            <TextView
+                android:id="@+id/receivingDescriptor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="#FFA500"
+                android:text="Received Message: "
+                android:textColor="#FFFFFF"
+                android:textSize="20sp" />
 
-        <EditText
-            android:id="@+id/inputMessage"
+            <TextView
+                android:id="@+id/showReceived"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/sendSection"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ems="10"
-            android:inputType="textPersonName"
-            android:text="Name" />
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/sendingDescriptor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="#FFA500"
+                android:text="Your message: "
+                android:textColor="#FFFFFF"
+                android:textSize="20sp" />
+
+            <EditText
+                android:id="@+id/inputMessage"
+                android:layout_width="460dp"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:inputType="textPersonName"
+                android:text="HI"
+                android:textColor="#FFFFFF"/>
+        </LinearLayout>
 
         <Button
             android:id="@+id/sendButton"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textColor="#FFFFFF"
             android:text="Send" />
+
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

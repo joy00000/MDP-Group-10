@@ -83,10 +83,11 @@ public class ConfigurationFragment extends Fragment {
             @Override
             public void onClick(View view){
                 Log.d(TAG, "attempting to send obstacle message");
-                String inputMessage =  map.getObstacleCoordString();
+                String obstacleMessage =  map.getObstacleCoordString();
+                Log.d(TAG, obstacleMessage);
                 // write message
                 if (BluetoothConnectionService.BluetoothConnectionStatus == true) {
-                    byte[] bytes = inputMessage.getBytes(Charset.defaultCharset());
+                    byte[] bytes = obstacleMessage.getBytes(Charset.defaultCharset());
                     BluetoothConnectionService.write(bytes);
                 }
             }
@@ -122,7 +123,6 @@ public class ConfigurationFragment extends Fragment {
             @Override
             public void onClick(View view){
                 map.setStartingPoint(true);
-
             }
         });
 
