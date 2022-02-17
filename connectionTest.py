@@ -26,6 +26,8 @@ def main():
     sock.sendall(bytes(msg, 'utf-8'))'''
     bytes_read = sock.recv(1024) 
     print(str(bytes_read.decode("utf-8")))
+    bytes_read = sock.recv(1024) 
+    print(str(bytes_read.decode("utf-8")))
 
     sock.close()
     

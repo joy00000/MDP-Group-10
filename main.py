@@ -52,24 +52,23 @@ class RPI(threading.Thread):
             #print("Message send to PC is " + msgToPC)
 
     def readFromAlgo(self):
-        print("in readFromAlgo function...")
+        #print("in readFromAlgo function...")
         while True:
             msg = self.pc_obj.readAlgo()  
             if(msg):
                 print("Message received from Algo is: " + str(msg))
-                msg = str(msg)
-                if(msg == "CAPTURE IMAGE"):
+                '''msg = str(msg)
+                if(msg == "CAPTURE IMAGE"): #add obstacleid
                     self.sendToPC(msg)
                 elif(msg[0:4] == "MOVE"): #“MOVE, FORWARD” “MOVE, LEFT BACKWARD”
-                    self.sendToSTM(msg)
+                    self.sendToSTM(msg)'''
     
-    def sendToAlgo(self, algomsg):
-        #msgToAlgo1 = "ADDOBSTACLE"
-        #msgToAlgo2 = "hellohello"
-        if(algomsg):
-            print("in sendToAlgo function...")
-            self.pc_obj.sendAlgo(str(algomsg))
-            #print("Message send to Algo is " + msgToAlgo)
+    def sendToAlgo(self):
+        algomsg = ['hello\n', 'world\n']
+        for i in algomsg:
+            #print("in sendToAlgo function...")
+            self.pc_obj.sendAlgo(i)
+            print("Message send to Algo is " + i)
 
     #Send function to android
     def sendToAndroid(self, msgToAndroid):
@@ -128,7 +127,7 @@ class RPI(threading.Thread):
         #STM_read_thread = threading.Thread(target=self.readFromSTM, args=(), name="STM_read")
         #android_read_thread = threading.Thread(target=self.readFromAndroid, args=(), name="android_read")
 
-        #set as daemon (all threads)
+        #set as daemon 
         #pc_send_thread.daemon = True
         algo_send_thread.daemon = True
         #pc_read_thread.daemon = True

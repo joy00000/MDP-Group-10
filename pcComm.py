@@ -32,7 +32,7 @@ class pc():
                 print('Socket binded')
 
                 self.serverSocket.listen(2)
-                print('Start listening for PC')
+                print('Start listening for PC and algo')
                 '''
                 #connect to image rec server
                 self.pcClient, self.pcClientIP = self.serverSocket.accept()
@@ -48,10 +48,7 @@ class pc():
                 self.connectionCount+=1
                 print('Connection: ' + str(self.connectionCount) + str(self.algoClientIP))
                 self.isConnected = True
-                
-                
-                
-
+     
         except Exception as e:
             print('Connection Error: ' + str(e))
     
@@ -89,7 +86,6 @@ class pc():
                     if (self.isConnected != True):
                         self.connect()
                     return False
-            
 
         except Exception as e:
             print('Sending pic error: ' + str(e))
@@ -97,12 +93,10 @@ class pc():
             self.sendImg(im, imgCount)
     
     def sendAlgo(self, algoMsg):
-        print("in send")
         try:
             if(algoMsg):
                 if self.isConnected:
                     self.algoClient.send(algoMsg.encode('utf-8'))
-                    print("done")
                 else:
                     if (self.isConnected != True):
                         self.connect()
