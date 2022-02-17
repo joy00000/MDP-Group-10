@@ -4,11 +4,9 @@ from asyncio.windows_utils import BUFSIZE
 from base64 import encode
 from pcComm import *
 from androidComm import *
-import struct
 from PIL import Image
 from PIL import ImageFile
 ImageFile.LOAD_TRUNCATED_IMAGES = True
-from tqdm import tqdm
 
 #-------------------------------------PC test-----------------------------------
 def main():

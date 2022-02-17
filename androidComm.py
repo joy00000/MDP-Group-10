@@ -60,7 +60,7 @@ class android():
             ex = 'Bluetooth Write Error: ' + str(e)
             ex = ex +'\nRetry Connection\n'
             print(ex)
-            self.connect()
+            #self.connect()
             
     def read(self):
         try:

@@ -40,14 +40,14 @@ class pc():
                 print('RPi connected with PC from ' + str(self.pcClient))
                 self.connectionCount+=1
                 print('Connection: ' + str(self.connectionCount))
-                '''
-                
+                ''' 
                 #connect to algo server
                 self.algoClient, self.algoClientIP = self.serverSocket.accept()
                 print('RPi connected with ALGO from ' + str(self.algoClient))
                 self.connectionCount+=1
                 print('Connection: ' + str(self.connectionCount) + str(self.algoClientIP))
                 self.isConnected = True
+                
      
         except Exception as e:
             print('Connection Error: ' + str(e))
@@ -114,10 +114,4 @@ class pc():
                 print('RPi socket closed')
         except Exception as e:
             print('Error closing PC connection: ' + str(e))
-
-
-
-
-
-
 
