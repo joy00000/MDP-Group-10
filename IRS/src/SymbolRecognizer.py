@@ -14,17 +14,20 @@ class SymbolRecognizer:
     ClassCount = -1
 
     # Class constuctor to setup weights
-    def __init__(self, weightPath, classes, numclasses):
-        self.LoadWeights(weightPath)
+    def __init__(self, weightPath, classes, numclasses, useGPU = True):
+        self.LoadWeights(weightPath, useGPU)
         self.Classes = classes
         self.ClassCount = numclasses
 
     # Import the selected weights file into YOLOv5
-    def LoadWeights(self, weightPath):
+    def LoadWeights(self, weightPath, useGPU = True):
         # Set the current weight to be the status
         self.ModelStatus = weightPath
         # Initialize the model
-        self.Model = torch.hub.load('ultralytics/yolov5', 'custom', path = weightPath)
+        #self.Model = torch.hub.load('ultralytics/yolov5', 'custom', path = weightPath)
+        if useGPU:
+            self.Model = torch.hub.load('../yolov5/', 'custom', path=weightPath, source='local')
+        else: self.Model = torch.hub.load('../yolov5/', 'custom', path=weightPath, source='local', device='cpu')
         # Print status
         print("\nYOLOv5 Model initiallized with weight: " + weightPath)
 
