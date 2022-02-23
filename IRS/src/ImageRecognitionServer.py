@@ -1,8 +1,10 @@
-# ImageRecognitionServer - Server that receives and stores images from RPi
-# @author Lim Rui An, Ryan
-# @version 1.2
-# @since 2022-02-10
-# @modified 2022-02-15
+'''
+ImageRecognitionServer - Server that receives and stores images from RPi
+@author Lim Rui An, Ryan
+@version 1.2
+@since 2022-02-10
+@modified 2022-02-15
+'''
 
 from SymbolRecognizer import SymbolRecognizer as SymRec
 #from pcComm import *
@@ -12,7 +14,7 @@ import time
 # Constant PATH variables
 WEIGHT_PATH = "../weights/e40b16v8best.pt"
 YOLO_PATH = "../yolov5"
-IMAGE_PATH = "../testimg/5_20.jpg"
+IMAGE_PATH = "../testimg/2173.jpg"
 
 RECEIVER_PATH = "../receivedimg/"
 RECEIVER_FILE_PATH = RECEIVER_PATH + 'out.jpg'
@@ -21,18 +23,18 @@ RECEIVER_FILE_PATH = RECEIVER_PATH + 'out.jpg'
 ANNOTATION_CLASSES = ['1_blue', '2_green', '3_red', '4_white', '5_yellow', '6_blue', '7_green', '8_red', '9_white', 'a_red', 'b_green', 'bullseye', 'c_white', 'circle_yellow', 'd_blue', 'down_arrow_red', 'e_yellow', 'f_red', 'g_green', 'h_white', 'left_arrow_blue', 'right_arrow_green', 's_blue', 't_yellow', 'u_red', 'up_arrow_white', 'v_green', 'w_white', 'x_blue', 'y_yellow', 'z_red']
 NUM_CLASSES = 31
 
+# System Settings
+CONNECTION_RETRY_TIMEOUT = 1
+SAVE_PATH = '../inferences/'
+SAVE_RESULTS = True
+USE_GPU = True
+
 # DEBUG Parameters
 DEBUG_MODE_ON = False #False #True
 
-# System Settings
-CONNECTION_RETRY_TIMEOUT = 1
-SAVE_RESULTS = True
-SAVE_PATH = '../inferences/'
-USE_GPU = True
-
 # Global Parameters
-RPisock = None # Socket of RPi
 SymbolRec = None # Symbol Recognizer
+RPisock = None # Socket of RPi
 
 # Main runtime
 def main():
@@ -41,13 +43,14 @@ def main():
     SymbolRec = SymRec(WEIGHT_PATH, ANNOTATION_CLASSES, NUM_CLASSES, USE_GPU)
 
     if DEBUG_MODE_ON:
+        startTime = time.time()
         msg = SymbolRec.ProcessSourceImages(IMAGE_PATH, SAVE_PATH, SAVE_RESULTS)
-        print("Detected: " + msg)
+        print("Detected: " + msg + " | Time taken: " + "{:.2f}s".format(time.time() - startTime))
     else: serverProcess()
 
 def serverProcess():
     # Trying to connect to RPi
-    print("Attempting Connection with RPi")
+    print("> Attempting Connection with RPi")
     global RPisock
     RPisock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
     RPisock.connect(("192.168.10.10", 3333))
@@ -57,7 +60,7 @@ def serverProcess():
 
     # Ready to receive images
     while RPisock != None:
-        print("Checking for receivable image")
+        print("> Checking for receivable image")
         try: # Try to receive image
             receiveImage(RPisock)
             processFlag = True
@@ -68,7 +71,7 @@ def serverProcess():
         try: # Try to process image
             if processFlag:
                 processReceivedImage()
-                break # TEMP: For A2 single process 
+                # break # TEMP: For A2 single process
         except (ValueError, Exception):
             print("Error processing image")
             time.sleep(CONNECTION_RETRY_TIMEOUT)
@@ -78,7 +81,7 @@ def serverProcess():
 
 def receiveImage(sock):
     global RECEIVER_FILE_PATH
-    print("\nGet Image Details from Server")
+    print("\n> Get Image Details from Server")
     # Get image file name from RPi over socket connection
     RPiMessage = sock.recv(1024).decode('utf-8')
     print("RPI MESSAGE: " + RPiMessage)
@@ -92,7 +95,7 @@ def processReceivedImage():
     global SymbolRec
     # Get result from processed image
     msg = SymbolRec.ProcessSourceImages(RECEIVER_FILE_PATH, SAVE_PATH, SAVE_RESULTS)
-    print("TARGET," + msg) # TODO: Change class name to class id
+    print("TARGET," + msg)
     # Send results to RPi
     RPisock.send(bytes(msg, 'utf-8'))
 
