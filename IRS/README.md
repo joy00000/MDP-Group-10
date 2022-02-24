@@ -27,6 +27,7 @@
     - DEBUG_MODE_ON, set to False
 
 ## Running the Server
+- Connect to RPi via WiFi
 - Run the ImageRecognitionServer.py
   - cd IRS\src (IMPORTANT TO SWITCH TO SRC DIRECTORY)
   - python ImageRecognitionServer.py
