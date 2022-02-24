@@ -140,6 +140,8 @@ def recv_w_timeout(sock, timeout = 1, enableIdleTimemout = True):
             pass
     # Concatenate the received data and return it
     #return ''.join(total_data)
+    # Make socket blocking once more before returning
+    sock.setblocking(1)
     return total_data # Returns a list of bytes
 
 def data_to_str(data):
