@@ -47,10 +47,12 @@ class SymbolRecognizer:
         if saveImg:
             results.save(save_dir = savePath)
         results.show()
-        outputMessage = self.SetupResultString(self.ProcessInferenceResults(results))
-        if outputMessage != "Nothing":
+        detection, outputMessage = self.SetupResultString(self.ProcessInferenceResults(results))
+        if detection != "Nothing":
             detectionString = "Detected: " + outputMessage + "(ID: " + self.IDs[outputMessage] + ")"
-        else: detectionString = "No Detection"
+        else:
+            detectionString = "No Detection"
+            return detection, detectionString
         return outputMessage, detectionString
 
     # Process results of model inference to determine which symbol is most likely the result
@@ -96,21 +98,29 @@ class SymbolRecognizer:
         print("\n> Setting Up Result Message")
         # Return the label that has the greatest vertical height
         label = "Nothing"
+        dirOffset = 0
+        bullOffset = 0
         maxHeight = -1
         bullseyeFound = False
         labels = results["labels"]
         height = results["height"]
+        offset = results["offset"]
         # Loop through the dataframe and return the symbol name (not bullseye) with the greatest height
         for idx in range(len(results)):
             i = idx
             tag = self.Classes[int(labels[i])]
+            vec = offset[i]
              # Found one that isn't a bullseye and having a greater max height
             if tag != 'bullseye' and height[i] > maxHeight:
                 maxHeight = height[i]
                 label = tag
+                dirOffset = vec
             elif tag == 'bullseye':
                 bullseyeFound = True
+                bullOffset = vec
         # If there was no tallest symbol but a bullseye was found
         if label == "Nothing" and bullseyeFound:
             label = 'bullseye'
-        return label
+            dirOffset = bullOffset
+
+        return label, label + "," + str(dirOffset)
