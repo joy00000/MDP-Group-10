@@ -1,15 +1,9 @@
 '''
 SymbolRecognizer - Recognizes symbols from input images using a weighted YOLOv5 Model
 @author Lim Rui An, Ryan
-<<<<<<< HEAD
 @version 1.3
 @since 2022-02-10
 @modified 2022-03-01
-=======
-@version 1.2
-@since 2022-02-10
-@modified 2022-02-18
->>>>>>> main
 '''
 
 # Imported dependencies
@@ -57,7 +51,6 @@ class SymbolRecognizer:
     # Process results of model inference to determine which symbol is most likely the result
     def ProcessInferenceResults(self, results):
         print("\n> Processing Inference Results")
-<<<<<<< HEAD
         # ALL CALCULATIONS OF BOUNDING BOXES WILL BE DONE IN TERMS OF RATIO
         labels, coords, conf = results.xyxyn[0][:, -1].to('cpu').numpy(), results.xyxyn[0][:, :-2].to('cpu').numpy(), results.xyxyn[0][:, -2].to('cpu').numpy()
 
@@ -92,20 +85,6 @@ class SymbolRecognizer:
         print(resultDF)
 
         return resultDF
-=======
-        print(results.pandas().xyxy[0])  # predictions (pandas)
-        labels, coord = results.xyxy[0][:, -1].to('cpu').numpy(), results.xyxy[0][:, :-1].to('cpu').numpy()
-        # Area calculations
-        heightList = []
-        for i in range(len(coord)):
-            #x = coord[i][2] - coord[i][0]
-            y = coord[i][3] - coord[i][1]
-            #areaList.append(x * y) # Area of bounding box
-            heightList.append(y) # Height of bounding box
-        print("Height for each bound: " + ' '.join([str(Height) for Height in heightList]))
-        labelswithheight = pd.DataFrame({'labels' : labels, 'height' : heightList})
-        return labelswithheight
->>>>>>> main
 
     # Make use of processed results to create an output string to be sent back to RPi
     def SetupResultString(self, results):

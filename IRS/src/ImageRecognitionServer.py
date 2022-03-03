@@ -1,19 +1,11 @@
 '''
 ImageRecognitionServer - Server that receives and stores images from RPi
 @author Lim Rui An, Ryan
-<<<<<<< HEAD
 @version 1.3
 @since 2022-02-10
 @modified 2022-03-01
 '''
 # Required dependencies
-=======
-@version 1.2
-@since 2022-02-10
-@modified 2022-02-15
-'''
-
->>>>>>> main
 from SymbolRecognizer import SymbolRecognizer as SymRec
 import socket
 import time
@@ -21,18 +13,13 @@ import time
 # Constant PATH variables
 WEIGHT_PATH = "../weights/"
 YOLO_PATH = "../yolov5"
-<<<<<<< HEAD
 IMAGE_PATH = "../testimg/4170_fullbright.jpg"
-=======
-IMAGE_PATH = "../testimg/2173.jpg"
->>>>>>> main
 
 RECEIVER_PATH = "../receivedimg/"
 RECEIVER_FILE_PATH = RECEIVER_PATH + 'out.jpg'
 
 # Other Constants
 ANNOTATION_CLASSES = ['1_blue', '2_green', '3_red', '4_white', '5_yellow', '6_blue', '7_green', '8_red', '9_white', 'a_red', 'b_green', 'bullseye', 'c_white', 'circle_yellow', 'd_blue', 'down_arrow_red', 'e_yellow', 'f_red', 'g_green', 'h_white', 'left_arrow_blue', 'right_arrow_green', 's_blue', 't_yellow', 'u_red', 'up_arrow_white', 'v_green', 'w_white', 'x_blue', 'y_yellow', 'z_red']
-<<<<<<< HEAD
 NUM_CLASSES = len(ANNOTATION_CLASSES)
 WEIGHTS = ['e40b16v8best.pt', 'E30_B16_TSv1.pt']
 
@@ -45,27 +32,10 @@ USE_GPU = False                      # Allow IRS to use GPU or CPU
 
 # DEBUG Parameters
 DEBUG_MODE_ON = True                # For local testing purposes, set to False for real use
-=======
-NUM_CLASSES = 31
-
-# System Settings
-CONNECTION_RETRY_TIMEOUT = 1
-SAVE_PATH = '../inferences/'
-SAVE_RESULTS = True
-USE_GPU = True
->>>>>>> main
-
-# DEBUG Parameters
-DEBUG_MODE_ON = False #False #True
 
 # Global Parameters
-<<<<<<< HEAD
 SymbolRec = None                    # Symbol Recognizer
 RPisock = None                      # Socket of RPi
-=======
-SymbolRec = None # Symbol Recognizer
-RPisock = None # Socket of RPi
->>>>>>> main
 
 # Main runtime
 def main():
@@ -166,14 +136,7 @@ def recvWithTimeout(sock, timeout = 1, enableIdleTimemout = True):
                 time.sleep(0.1) # No valid data received, wait for a bit
         except:
             pass
-<<<<<<< HEAD
     sock.setblocking(1) # Make socket blocking once more before returning
-=======
-    # Concatenate the received data and return it
-    #return ''.join(total_data)
-    # Make socket blocking once more before returning
-    sock.setblocking(1)
->>>>>>> main
     return total_data # Returns a list of bytes
 
 def data_to_str(data):
