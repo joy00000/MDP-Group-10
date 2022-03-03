@@ -31,7 +31,7 @@ SAVE_PATH = '../inferences/'        # Location to save images to
 USE_GPU = False                      # Allow IRS to use GPU or CPU
 
 # DEBUG Parameters
-DEBUG_MODE_ON = True                # For local testing purposes, set to False for real use
+DEBUG_MODE_ON = False              # For local testing purposes, set to False for real use
 
 # Global Parameters
 SymbolRec = None                    # Symbol Recognizer
