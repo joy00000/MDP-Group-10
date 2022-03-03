@@ -45,26 +45,37 @@ class RPI(threading.Thread):
                 print("Message received from PC is: " + str(msg))
                 if (msg == "RESEND"):
                     self.imgCount-=1
-                    self.sendToPC()
+                    self.sendToPC("TAKE")
                 elif (msg == "IRS Pinging RPi"):
                     continue
-                elif (msg == "Nothing" or msg == "bullseye"):
+                elif (msg == "Nothing"):
                     print("msg from image rec: " + msg)
+                elif msg[:8] == "bullseye":
+                    msg = msg.split(',')
+                    img, offset = msg[0], msg[1]
+                    self.sendToSTM(offset)
                 else:
                     print("msg from image rec: " + msg)
-                    print("TARGET,"+ str(self.currId[0]) + ',' + self.conversion[msg])
-                    #self.sendToAndroid("TARGET,"+ str(self.currId[0]) + ',' + self.conversion[msg])
+                    msg = msg.split(',')
+                    print(msg)
+                    img, offset = msg[0], msg[1]
+                    print("TARGET,"+ str(self.currId[0]) + ',' + self.conversion[img])
+                    self.sendToSTM(offset)
+                    #self.sendToAndroid("TARGET,"+ str(self.currId[0]) + ',' + self.conversion[img])
                     #self.currId = self.currId[1:]
                 
                 
     #Function to send to PC
-    def sendToPC(self):
-        stream = self.takePic()
-        print("in sendToPC function...")
-        if(stream):
-            self.sendToSTM("DONE")
-            self.imgCount+=1
-            self.pc_obj.sendImg(stream, self.imgCount)
+    def sendToPC(self, msg):
+        if msg == "TAKE":
+            stream = self.takePic()
+            print("in sendToPC function...")
+            if(stream):
+                self.sendToSTM("DONE")
+                self.imgCount+=1
+                self.pc_obj.sendImg(stream, self.imgCount)
+        elif msg == "STOP":
+            self.pc_obj.sendStr(msg)
             
             
 
@@ -94,7 +105,7 @@ class RPI(threading.Thread):
                                 #self.sendToAndroid(self.posList[0])
                                 #self.posList = self.posList[1:]
                                 if currMsg == "OSRT" or currMsg == "OSLT":
-                                    time.sleep(9)
+                                    time.sleep(8)
                                 elif currMsg == "TAKE":
                                     time.sleep(8)
                                 else:
@@ -107,6 +118,7 @@ class RPI(threading.Thread):
                             print(msg)
                             currPos = msg.split('|')
                             print(currPos)
+                            currPos.pop()
                             self.posList.append(currPos)
                             print(self.posList[0])
                         
@@ -160,7 +172,7 @@ class RPI(threading.Thread):
                 STMmsg = str(STMmsg)
                 print("Message received from STM is: " + STMmsg)
                 if (STMmsg == "R"):
-                    self.sendToPC()
+                    self.sendToPC("TAKE")
                     #self.sendToSTM("DONE")
                 elif (STMmsg == "D"):
                     self.sendToPC("STOP")
@@ -227,5 +239,4 @@ if __name__ == "__main__":
         while True:
             pass
     except KeyboardInterrupt:
-        makeCollage()
         main.closeAll()

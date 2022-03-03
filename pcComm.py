@@ -40,14 +40,14 @@ class pc():
                 print('RPi connected with PC from ' + str(self.pcClient))
                 self.connectionCount+=1
                 print('Connection: ' + str(self.connectionCount))
-                ''''
+                
                 #connect to algo server
                 self.algoClient, self.algoClientIP = self.serverSocket.accept()
                 print('RPi connected with ALGO from ' + str(self.algoClient))
                 self.connectionCount+=1
                 print('Connection: ' + str(self.connectionCount) + str(self.algoClientIP))
                 self.isConnected = True
-                '''
+                
         except Exception as e:
             print('Connection Error: ' + str(e))
     
@@ -70,8 +70,8 @@ class pc():
         
         except Exception as err:
             print(err)
-            #self.connect()
-            #self.readAlgo()  
+            self.connect()
+            self.readAlgo()  
     
     def sendImg(self, im, imgCount):
         try:
@@ -90,6 +90,22 @@ class pc():
             print('Sending pic error: ' + str(e))
             self.connect()
             self.sendImg(im, imgCount)
+
+    def sendStr(self, msg):
+        try:
+            if(msg != ""):
+                if (self.isConnected == True):
+                    self.pcClient.send(msg.encode('utf-8'))
+                    return True
+                else:
+                    if (self.isConnected != True):
+                        self.connect()
+                    return False
+
+        except Exception as e:
+            print('Sending string error: ' + str(e))
+            self.connect()
+            self.sendStr(msg)
     
     def sendAlgo(self, algoMsg):
         try:
