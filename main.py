@@ -6,6 +6,7 @@ from PIL import Image
 from androidComm import *
 from stmComm import *
 from picamera import PiCamera
+from collage import makeCollage
 
 
 class RPI(threading.Thread):
@@ -13,14 +14,13 @@ class RPI(threading.Thread):
         threading.Thread.__init__(self)
         
         #Define subsystem objects
-        #self.pc_obj = pc()
-        self.android_obj = android()
+        self.pc_obj = pc()
+        #self.android_obj = android()
         self.STM_obj = STM()
-        #self.image_obj = imageComm()
         
         #Establish connection to all the subsystem
-        #self.pc_obj.connect()
-        self.android_obj.connect()
+        self.pc_obj.connect()
+        #self.android_obj.connect()
         self.STM_obj.connect()
         
         # save camera to class
@@ -31,6 +31,9 @@ class RPI(threading.Thread):
         'd_blue':"23",  'e_yellow':"24", 'f_red':"25",  'g_green':"26",'h_white':"27",  's_blue':"28", 't_yellow':"29", 'u_red':"30", 
         'v_green':"31", 'w_white':"32", 'x_blue':"33", 'y_yellow':"34", 'z_red':"35",'up_arrow_white':"36", 
         'down_arrow_red':"37",'right_arrow_green':"38",'left_arrow_blue':"39", 'circle_yellow':"40"}
+
+        self.currId = []
+        self.algoList = []
         
     #Function to receive from PC (images)    
     def readFromPC(self):
@@ -40,40 +43,57 @@ class RPI(threading.Thread):
             if(msg):
                 msg = str(msg)
                 print("Message received from PC is: " + str(msg))
-                '''if (msg == "RESEND"):
+                if (msg == "RESEND"):
                     self.imgCount-=1
                     self.sendToPC()
-                elif (msg[0:7]=="TARGET"):
-                    self.sendToAndroid(msg)'''
+                elif (msg == "bullseye" or msg == "Nothing"):
+                    print("message from image rec: " + msg)
+                else:
+                    print("msg from image rec: " + msg)
+                    self.sendToAndroid("TARGET,"+ str(self.currId[0]) + ',' + self.conversion[msg])
+                    self.currId = self.currId[1:]
+                
                 
     #Function to send to PC
     def sendToPC(self):
         stream = self.takePic()
         print("in sendToPC function...")
         if(stream):
+            self.sendToSTM("DONE")
             self.imgCount+=1
             self.pc_obj.sendImg(stream, self.imgCount)
-            #self.sendToSTM("DONE")
             
-
+            
     def readFromAlgo(self):
         #print("in readFromAlgo function...")
         while True:
-            msg = self.pc_obj.readAlgo()  
-            if(msg):
-                print("Message received from Algo is: " + str(msg))
-                '''msg = str(msg)
-                if(msg == "TAKE"): #add obstacleid
-                    self.sendToSTM(msg)
-                elif(msg[0:4] == "MOVE"): #“MOVE, FORWARD” “MOVE, LEFT BACKWARD”
-                    self.sendToSTM(msg)'''
+            algoMsg = self.pc_obj.readAlgo()
+            if(algoMsg):
+                    algoMsg = str(algoMsg)
+                    print("Message received from Algo is: " + algoMsg)
+                    algoMsg = algoMsg.splitlines()
+                    self.algoList += algoMsg
+                    print(self.algoList)
+
+                    while self.algoList:
+                        msg = self.algoList[0]
+                        self.algoList = self.algoList[1:]
+            
+                        if(msg[0:4] == "MOVE"): #“MOVE, FORWARD” “MOVE, LEFT BACKWARD”
+                            self.currId.append(msg[-1])
+                            msg = msg[5:-2]
+                            print("sliced:" + msg)
+                            for i in range(0, len(msg), 5):
+                                currMsg = msg[i:i+4]
+                                print("current msg:" + currMsg)
+                                self.sendToSTM(currMsg)
+                                time.sleep(5)
+
     
-    def sendToAlgo(self):
-        algomsg = ['hello\n', 'world\n']
-        for i in algomsg:
-            #print("in sendToAlgo function...")
-            self.pc_obj.sendAlgo(i)
-            print("Message send to Algo is " + i)
+    def sendToAlgo(self, algoMsg):
+        print("in sendToAlgo function...")
+        self.pc_obj.sendAlgo(algoMsg+'\n')
+        print("Message send to Algo is " + algoMsg)
 
     #Send function to android
     def sendToAndroid(self, msgToAndroid):
@@ -96,10 +116,12 @@ class RPI(threading.Thread):
                     self.sendToSTM("L---")
                 elif(androidmsg == "right"):
                     self.sendToSTM("R---")
-                '''
+                
                 elif(androidmsg [0:11] == "ADDOBSTACLE"):
                     self.sendToAlgo(androidmsg)
-                    print("sent to algo")'''
+                    print("sent to algo: " + androidmsg)
+                else:
+                    print("stops here:" +  androidmsg)
 
     #Send Function to STM 
     def sendToSTM(self, msgToSTM):
@@ -114,8 +136,9 @@ class RPI(threading.Thread):
             if(STMmsg):
                 STMmsg = str(STMmsg)
                 print("Message received from STM is: " + STMmsg)
-                if (STMmsg == "REACH"):
-                    self.sendToPC()
+                if (STMmsg == "R"):
+                    #self.sendToPC()
+                    self.sendToSTM("DONE")
     
     def takePic(self):
         self.camera.start_preview()
@@ -126,7 +149,7 @@ class RPI(threading.Thread):
         self.camera.capture(stream, 'jpeg')
         stream.seek(0)
         stream = stream.read()
-        
+        self.camera.stop_preview()
         return stream
         
     def start_threads(self):
@@ -134,37 +157,37 @@ class RPI(threading.Thread):
         #pc_send_thread = threading.Thread(target=self.sendToPC, args=(), name="pc_send")
         #algo_send_thread = threading.Thread(target=self.sendToAlgo, args=(), name="algo_send")
         #STM_send_thread = threading.Thread(target=self.sendToSTM, args=(), name="STM_send")
-        android_send_thread = threading.Thread(target=self.sendToAndroid, args=(), name="android_send")
+        #android_send_thread = threading.Thread(target=self.sendToAndroid, args=(), name="android_send")
         
         #read threads for pc, STM and android
         #pc_read_thread = threading.Thread(target=self.readFromPC, args=(), name="pc_read")
-        #algo_read_thread = threading.Thread(target=self.readFromAlgo, args=(), name="algo_read")
+        algo_read_thread = threading.Thread(target=self.readFromAlgo, args=(), name="algo_read")
         STM_read_thread = threading.Thread(target=self.readFromSTM, args=(), name="STM_read")
-        android_read_thread = threading.Thread(target=self.readFromAndroid, args=(), name="android_read")
+        #android_read_thread = threading.Thread(target=self.readFromAndroid, args=(), name="android_read")
 
         #set as daemon 
         #pc_send_thread.daemon = True
         #algo_send_thread.daemon = True
         #pc_read_thread.daemon = True
-        #algo_read_thread.daemon = True
+        algo_read_thread.daemon = True
         #STM_send_thread.daemon = True
         STM_read_thread.daemon = True
-        android_send_thread.daemon = True
-        android_read_thread.daemon = True
+        #android_send_thread.daemon = True
+        #android_read_thread.daemon = True
 
         #start threads -> dont start send threads!
         #pc_read_thread.start()
-        #algo_read_thread.start()
+        algo_read_thread.start()
         #pc_send_thread.start()
         #algo_send_thread.start()
         STM_read_thread.start()
         #STM_send_thread.start()
-        android_read_thread.start()
+        #android_read_thread.start()
         #android_send_thread.start()
 
     def closeAll(self): #disconnect everything
-        #self.pc_obj.disconnect()
-        self.android_obj.close()
+        self.pc_obj.disconnect()
+        #self.android_obj.close()
         self.STM_obj.close()
 
 
@@ -178,4 +201,5 @@ if __name__ == "__main__":
         while True:
             pass
     except KeyboardInterrupt:
+        makeCollage()
         main.closeAll()

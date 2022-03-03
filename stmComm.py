@@ -29,9 +29,8 @@ class STM():
       
   def read(self):
     try:
-        val = self.ser.read(10).decode('utf-8').strip('\x00')
-        if len(val):
-          return val
+        val = self.ser.read().decode('utf-8')
+        return val
     except Exception as err:
         print('Reading in error' + str(err))
         self.connect()

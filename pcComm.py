@@ -33,22 +33,21 @@ class pc():
 
                 self.serverSocket.listen(2)
                 print('Start listening for PC and algo')
-                '''
+                
                 #connect to image rec server
                 self.pcClient, self.pcClientIP = self.serverSocket.accept()
                 self.isConnected = True
                 print('RPi connected with PC from ' + str(self.pcClient))
                 self.connectionCount+=1
                 print('Connection: ' + str(self.connectionCount))
-                ''' 
+                ''''
                 #connect to algo server
                 self.algoClient, self.algoClientIP = self.serverSocket.accept()
                 print('RPi connected with ALGO from ' + str(self.algoClient))
                 self.connectionCount+=1
                 print('Connection: ' + str(self.connectionCount) + str(self.algoClientIP))
                 self.isConnected = True
-                
-     
+                '''
         except Exception as e:
             print('Connection Error: ' + str(e))
     
@@ -104,7 +103,7 @@ class pc():
 
         except Exception as e:
             print('Sending algo error: ' + str(e))
-            #self.connect()
+            self.connect()
             self.sendAlgo(algoMsg)
 
     def disconnect(self):
