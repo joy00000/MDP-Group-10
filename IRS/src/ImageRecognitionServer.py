@@ -9,29 +9,38 @@ ImageRecognitionServer - Server that receives and stores images from RPi
 from SymbolRecognizer import SymbolRecognizer as SymRec
 import socket
 import time
+import os
+# Pil for drawing on images
+from PIL import Image
+from PIL import ImageFont
+from PIL import ImageDraw
+import math
 
 # Constant PATH variables
 WEIGHT_PATH = "../weights/"
 YOLO_PATH = "../yolov5"
-IMAGE_PATH = "../testimg/4170_fullbright.jpg"
 
 RECEIVER_PATH = "../receivedimg/"
 RECEIVER_FILE_PATH = RECEIVER_PATH + 'out.jpg'
 
 # Other Constants
 ANNOTATION_CLASSES = ['1_blue', '2_green', '3_red', '4_white', '5_yellow', '6_blue', '7_green', '8_red', '9_white', 'a_red', 'b_green', 'bullseye', 'c_white', 'circle_yellow', 'd_blue', 'down_arrow_red', 'e_yellow', 'f_red', 'g_green', 'h_white', 'left_arrow_blue', 'right_arrow_green', 's_blue', 't_yellow', 'u_red', 'up_arrow_white', 'v_green', 'w_white', 'x_blue', 'y_yellow', 'z_red']
+ANNOTATION_ID = {'1_blue': "11",'2_green': "12", '3_red':"13", '4_white':"14", '5_yellow':"15", '6_blue':"16", '7_green':"17", '8_red':"18", '9_white':"19", 'a_red':"20", 'b_green':"21", 'c_white':"22", 'd_blue':"23",  'e_yellow':"24", 'f_red':"25",  'g_green':"26",'h_white':"27",  's_blue':"28", 't_yellow':"29", 'u_red':"30", 'v_green':"31", 'w_white':"32", 'x_blue':"33", 'y_yellow':"34", 'z_red':"35",'up_arrow_white':"36", 'down_arrow_red':"37",'right_arrow_green':"38",'left_arrow_blue':"39", 'circle_yellow':"40"}
 NUM_CLASSES = len(ANNOTATION_CLASSES)
 WEIGHTS = ['e40b16v8best.pt', 'E30_B16_TSv1.pt']
 
 # System Settings
 CONNECTION_RETRY_TIMEOUT = 0.5      # How long to timeout in seconds
 WEIGHT_SELECTION = 0                # Which weights file to load, refer to list above @ WEIGHTS
+COLLAGE_PATH = '../collage/'        # Path of the saved collage
 SAVE_RESULTS = True                 # Save result images in listed SAVE_PATH
 SAVE_PATH = '../inferences/'        # Location to save images to
-USE_GPU = False                      # Allow IRS to use GPU or CPU
+USE_GPU = False                     # Allow IRS to use GPU or CPU
 
 # DEBUG Parameters
-DEBUG_MODE_ON = False              # For local testing purposes, set to False for real use
+DEBUG_MODE_ON = False               # For local testing purposes, set to False for real use
+DEBUG_IMAGE = "1_5 - Copy.jpg"
+IMAGE_PATH = "../testimg/" + DEBUG_IMAGE
 
 # Global Parameters
 SymbolRec = None                    # Symbol Recognizer
@@ -41,12 +50,15 @@ RPisock = None                      # Socket of RPi
 def main():
     # Initialize Global Recognizer used for all images
     global SymbolRec
-    SymbolRec = SymRec(WEIGHT_PATH + WEIGHTS[WEIGHT_SELECTION], ANNOTATION_CLASSES, NUM_CLASSES, USE_GPU)
+    SymbolRec = SymRec(WEIGHT_PATH + WEIGHTS[WEIGHT_SELECTION], ANNOTATION_CLASSES, ANNOTATION_ID, NUM_CLASSES, USE_GPU)
 
     if DEBUG_MODE_ON:
         startTime = time.time()
-        msg = SymbolRec.ProcessSourceImages(IMAGE_PATH, SAVE_PATH, SAVE_RESULTS)
+        #resizeImage(IMAGE_PATH)
+        msg, detectionString = SymbolRec.ProcessSourceImages(IMAGE_PATH, SAVE_PATH, SAVE_RESULTS)
         print("Detected: " + msg + " | Time taken: " + "{:.2f}s".format(time.time() - startTime))
+        modifyInferenceImage(SAVE_PATH, DEBUG_IMAGE, detectionString)
+        createInferenceCollage(SAVE_PATH)
     else: serverProcess()
 
 def serverProcess():
@@ -62,8 +74,12 @@ def serverProcess():
     # Ready to receive images
     while RPisock != None:
         print("> Checking for receivable image")
+        fileName = None
         try: # Try to receive image
-            receiveImage(RPisock)
+            fileName = receiveImageDetails(RPisock)
+            if fileName == "STOP":
+                break
+            receiveImage(RPisock, fileName)
             processFlag = True
         except (ValueError, Exception):
             processFlag = False
@@ -71,7 +87,7 @@ def serverProcess():
             time.sleep(CONNECTION_RETRY_TIMEOUT)
         try: # Try to process image
             if processFlag:
-                processReceivedImage()
+                modifyInferenceImage(SAVE_PATH, fileName + '.jpg', processReceivedImage())
                 # break # TEMP: For A2 single process
         except (ValueError, Exception):
             print("Error processing image")
@@ -79,26 +95,85 @@ def serverProcess():
 
     # Close the socket when we're done
     RPisock.close()
+    # Generate the inference collage
+    createInferenceCollage(SAVE_PATH)
 
-def receiveImage(sock):
-    global RECEIVER_FILE_PATH
+def receiveImageDetails(sock):
     print("\n> Get Image Details from Server")
     # Get image file name from RPi over socket connection
     RPiMessage = sock.recv(1024).decode('utf-8')
     print("RPI MESSAGE: " + RPiMessage)
+    return RPiMessage
+
+def receiveImage(sock, RPiMessage):
+    global RECEIVER_FILE_PATH
+    print("\n> Get Image from Server")
     RECEIVER_FILE_PATH = RECEIVER_PATH + RPiMessage + '.jpg'
     print("File Path Set: " + RECEIVER_FILE_PATH)
     # Get image file from RPi over socket connection
     getFileFromRPi(sock, RECEIVER_FILE_PATH)
-    return RPiMessage
+    #resizeImage(RECEIVER_FILE_PATH)
 
 def processReceivedImage():
     global SymbolRec
     # Get result from processed image
-    msg = SymbolRec.ProcessSourceImages(RECEIVER_FILE_PATH, SAVE_PATH, SAVE_RESULTS)
+    msg, detectionString = SymbolRec.ProcessSourceImages(RECEIVER_FILE_PATH, SAVE_PATH, SAVE_RESULTS)
     print("TARGET," + msg)
     # Send results to RPi
     RPisock.send(bytes(msg, 'utf-8'))
+    return detectionString
+
+def resizeImage(ImagePath, ImgResolution = 1080):
+    img = Image.open(ImagePath)
+    WRatio = ImgResolution / img.size[0]
+    # Downscales image while maintaining aspect ratio
+    img = img.resize((ImgResolution, int(img.size[1]*WRatio)), resample = Image.ANTIALIAS)
+    img.save(ImagePath)
+
+def modifyInferenceImage(SAVE_PATH, ImageName, ResultString, FontSize = 25):
+    print("\n> Setting Up Image for Collage Later")
+    print("Opening Image")
+    img = Image.open(SAVE_PATH + ImageName)
+    draw = ImageDraw.Draw(img)
+    font =  ImageFont.truetype("arial.ttf", FontSize)
+    # Drop shadow
+    print("Drawing on Image")
+    draw.text((7, 7), ResultString, (0,0,0), font = font)
+    # Print Text
+    draw.text((5, 5), ResultString, (255,255,255), font = font)
+    print("Image Modified")
+    img.save(SAVE_PATH + ImageName)
+
+def createInferenceCollage(PATH, MaxCols = 4, ImgResolution = 416):
+    try: # Obtain files from directory
+        files = os.listdir(PATH)
+    except (ValueError, Exception):
+        print("Error opening inference collage path")
+        return
+    print("\n> Generating Inference Collage")
+    # Set up the image to be used for the collage
+    file_count = len(files)
+    MaxRows = math.ceil(file_count / MaxCols)
+    if MaxCols > file_count:
+        MaxCols = file_count
+    collage = Image.new('RGB', (MaxCols * ImgResolution, MaxRows * ImgResolution)) # Cols, Rows
+    # Iterators for collaging
+    i,j = 0,0
+    # For each file in the inference folder
+    for f in files:
+        if f == None:
+            continue
+        if i == MaxCols:
+            i = 0
+            j += 1
+        im = Image.open(PATH + f)
+        im = im.resize((ImgResolution, ImgResolution), resample = Image.ANTIALIAS)
+        collage.paste(im, (i * im.size[0], j * im.size[0])) # Insert the resized image into the collage
+        i += 1
+    # Save the results of the collage
+    collage.save(COLLAGE_PATH + "collage.jpg","JPEG")
+    print("Collage generated at location: " + COLLAGE_PATH + "collage.jpg")
+    collage.show()
 
 def getFileFromRPi(sock, path):
     with open(path, "wb") as f:

@@ -14,14 +14,16 @@ class SymbolRecognizer:
     ModelStatus = "nil"
     Model = None
     Classes = None
+    IDs = None
     ClassCount = -1
     ConfThreshold = 0.6 # NMS confidence threshold
 
     # Class constuctor to setup weights
-    def __init__(self, weightPath, classes, numclasses, useGPU = True):
+    def __init__(self, weightPath, classes, ids, numclasses, useGPU = True):
         print("> Begin initiallization of YOLOv5 Model")
         self.LoadWeights(weightPath, useGPU)
         self.Classes = classes
+        self.IDs = ids
         self.ClassCount = numclasses
 
     # Import the selected weights file into YOLOv5
@@ -46,7 +48,10 @@ class SymbolRecognizer:
             results.save(save_dir = savePath)
         results.show()
         outputMessage = self.SetupResultString(self.ProcessInferenceResults(results))
-        return outputMessage
+        if outputMessage != "Nothing":
+            detectionString = "Detected: " + outputMessage + "(ID: " + self.IDs[outputMessage] + ")"
+        else: detectionString = "No Detection"
+        return outputMessage, detectionString
 
     # Process results of model inference to determine which symbol is most likely the result
     def ProcessInferenceResults(self, results):
