@@ -49,7 +49,7 @@ class SymbolRecognizer:
         results.show()
         detection, outputMessage = self.SetupResultString(self.ProcessInferenceResults(results))
         if detection != "Nothing":
-            detectionString = "Detected: " + outputMessage + "(ID: " + self.IDs[detection] + ")"
+            detectionString = "Detected: " + detection + " (ID: " + self.IDs[detection] + ")"
         else:
             detectionString = "No Detection"
             return detection, detectionString
