@@ -13,12 +13,12 @@ class RPI(threading.Thread):
         threading.Thread.__init__(self)
         
         #Define subsystem objects
-        #self.pc_obj = pc()
+        self.pc_obj = pc()
         self.android_obj = android()
         #self.STM_obj = STM()
         
         #Establish connection to all the subsystem
-        #self.pc_obj.connect()
+        self.pc_obj.connect()
         self.android_obj.connect()
         #self.STM_obj.connect()
         
@@ -135,11 +135,11 @@ class RPI(threading.Thread):
         #pc_send_thread = threading.Thread(target=self.sendToPC, args=(), name="pc_send")
         #algo_send_thread = threading.Thread(target=self.sendToAlgo, args=(), name="algo_send")
         #STM_send_thread = threading.Thread(target=self.sendToSTM, args=(), name="STM_send")
-        android_send_thread = threading.Thread(target=self.sendToAndroid, args=(), name="android_send")
+        #android_send_thread = threading.Thread(target=self.sendToAndroid, args=(), name="android_send")
         
         #read threads for pc, STM and android
         #pc_read_thread = threading.Thread(target=self.readFromPC, args=(), name="pc_read")
-        #algo_read_thread = threading.Thread(target=self.readFromAlgo, args=(), name="algo_read")
+        algo_read_thread = threading.Thread(target=self.readFromAlgo, args=(), name="algo_read")
         #STM_read_thread = threading.Thread(target=self.readFromSTM, args=(), name="STM_read")
         android_read_thread = threading.Thread(target=self.readFromAndroid, args=(), name="android_read")
 
@@ -150,21 +150,21 @@ class RPI(threading.Thread):
         #algo_read_thread.daemon = True
         #STM_send_thread.daemon = True
         #STM_read_thread.daemon = True
-        android_send_thread.daemon = True
+        #android_send_thread.daemon = True
         android_read_thread.daemon = True
 
         #start threads -> dont start send threads!
         #pc_read_thread.start()
-        #algo_read_thread.start()
+        algo_read_thread.start()
         #pc_send_thread.start()
         #algo_send_thread.start()
         #STM_read_thread.start()
         #STM_send_thread.start()
         android_read_thread.start()
-        android_send_thread.start()
+        #android_send_thread.start()
 
     def closeAll(self): #disconnect everything
-        #self.pc_obj.disconnect()
+        self.pc_obj.disconnect()
         self.android_obj.close()
         #self.STM_obj.close()
 

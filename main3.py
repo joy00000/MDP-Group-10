@@ -1,11 +1,11 @@
 import threading
 import time
 from pcComm import *
-import struct
 from PIL import Image
 from androidComm import *
 from stmComm import *
 from picamera import PiCamera
+from collage import makeCollage
 
 
 class RPI(threading.Thread):
@@ -15,12 +15,12 @@ class RPI(threading.Thread):
         #Define subsystem objects
         self.pc_obj = pc()
         self.android_obj = android()
-        self.STM_obj = STM()
+        #self.STM_obj = STM()
         
         #Establish connection to all the subsystem
         self.pc_obj.connect()
         self.android_obj.connect()
-        self.STM_obj.connect()
+        #self.STM_obj.connect()
         
         # save camera to class
         self.camera = None
@@ -33,6 +33,7 @@ class RPI(threading.Thread):
 
         self.currId = []
         self.algoList = []
+        self.posList = []
         
     #Function to receive from PC (images)    
     def readFromPC(self):
@@ -42,26 +43,56 @@ class RPI(threading.Thread):
             if(msg):
                 msg = str(msg)
                 print("Message received from PC is: " + str(msg))
-                '''if (msg == "RESEND"):
+                
+                if (msg == "IRS Pinging RPi"):
+                    continue
+                elif (msg == "Nothing"):
+                    print("msg from image rec: " + msg)
+                    self.sendToSTM("REDO")
                     self.imgCount-=1
-                    self.sendToPC()
+                elif msg[:8] == "bullseye":
+                    msg = msg.split(',')
+                    img, offset = msg[0], msg[1]
+                    print("OFFSET: " + offset)
+                    sign = offset[0]
+                    offset = float(offset[1:])
+                    offset = offset*100
+                    if offset >= 10:
+                        offset = str(offset)
+                        self.sendToSTM(sign + offset[:3])
                 else:
-                    self.sendToAndroid("TARGET,"+ str(self.currId[0]) + self.conversion(msg))
-                    self.currId = [1:]'''
+                    print("msg from image rec: " + msg)
+                    msg = msg.split(',')
+                    print(msg)
+                    img, offset = msg[0], msg[1]
+                    print("TARGET,"+ str(self.currId[0]) + ',' + self.conversion[img])
+                    print("OFFSET: " + offset)
+                    sign = offset[0]
+                    offset = float(offset[1:])
+                    offset = offset*100
+                    if offset >= 10:
+                        offset = str(offset)
+                        self.sendToSTM(sign + offset[:3])
+                    #self.sendToAndroid("TARGET,"+ str(self.currId[0]) + ',' + self.conversion[img])
+                    #self.currId = self.currId[1:]
                 
                 
     #Function to send to PC
-    def sendToPC(self):
-        stream = self.takePic()
-        print("in sendToPC function...")
-        if(stream):
-            self.imgCount+=1
-            self.pc_obj.sendImg(stream, self.imgCount)
-            self.sendToSTM("DONE")
+    def sendToPC(self, msg):
+        if msg == "TAKE":
+            stream = self.takePic()
+            print("in sendToPC function...")
+            if(stream):
+                self.sendToSTM("DONE")
+                self.imgCount+=1
+                self.pc_obj.sendImg(stream, self.imgCount)
+        elif msg == "STOP":
+            self.pc_obj.sendStr(msg)
+            
             
 
     def readFromAlgo(self):
-        #print("in readFromAlgo function...")
+        print("in readFromAlgo function...")
         while True:
             algoMsg = self.pc_obj.readAlgo()
             if(algoMsg):
@@ -72,10 +103,10 @@ class RPI(threading.Thread):
                     print(self.algoList)
 
                     while self.algoList:
-                        msg = self.algoList[0]
+                        msg = self.algoList[0] 
                         self.algoList = self.algoList[1:]
             
-                        if(msg[0:4] == "MOVE"): #“MOVE, FORWARD” “MOVE, LEFT BACKWARD”
+                        if(msg[0:4] == "MOVE"): 
                             self.currId.append(msg[-1])
                             msg = msg[5:-2]
                             print("sliced:" + msg)
@@ -83,9 +114,30 @@ class RPI(threading.Thread):
                                 currMsg = msg[i:i+4]
                                 print("current msg:" + currMsg)
                                 self.sendToSTM(currMsg)
-                                time.sleep(1)
+                                #self.sendToAndroid(self.posList[0])
+                                #self.posList = self.posList[1:]
+                                if currMsg == "OSRT" or currMsg == "OSLT":
+                                    time.sleep(8)
+                                elif currMsg == "TAKE":
+                                    time.sleep(8)
+                                else:
+                                    dist = currMsg[-2:]
+                                    total = int(dist)/2
+                                    time.sleep(int(total))
+                        
+                        elif(msg[0:4] == "COOR"):
+                            msg = msg[5:]
+                            print(msg)
+                            currPos = msg.split('|')
+                            print(currPos)
+                            currPos.pop()
+                            self.posList.append(currPos)
+                            print(self.posList[0])
+                        
+                        elif(msg == "LAST"):
+                            self.sendToSTM(msg)
 
-    
+                                  
     def sendToAlgo(self, algoMsg):
         print("in sendToAlgo function...")
         self.pc_obj.sendAlgo(algoMsg+'\n')
@@ -112,10 +164,9 @@ class RPI(threading.Thread):
                     self.sendToSTM("L---")
                 elif(androidmsg == "right"):
                     self.sendToSTM("R---")
-                
                 elif(androidmsg [0:11] == "ADDOBSTACLE"):
                     self.sendToAlgo(androidmsg)
-                    print("sent to algo: " + androidmsg)
+                    print("sent to algo")
                 else:
                     print("stops here:" +  androidmsg)
 
@@ -133,8 +184,12 @@ class RPI(threading.Thread):
                 STMmsg = str(STMmsg)
                 print("Message received from STM is: " + STMmsg)
                 if (STMmsg == "R"):
-                    #self.sendToPC()
-                    self.sendToSTM("DONE")
+                    self.sendToPC("TAKE")
+                    #self.sendToSTM("DONE")
+                elif (STMmsg == "D"):
+                    print("STOP: END")
+                    self.sendToPC("STOP")
+                    
     
     def takePic(self):
         self.camera.start_preview()
@@ -158,7 +213,7 @@ class RPI(threading.Thread):
         #read threads for pc, STM and android
         #pc_read_thread = threading.Thread(target=self.readFromPC, args=(), name="pc_read")
         algo_read_thread = threading.Thread(target=self.readFromAlgo, args=(), name="algo_read")
-        STM_read_thread = threading.Thread(target=self.readFromSTM, args=(), name="STM_read")
+        #STM_read_thread = threading.Thread(target=self.readFromSTM, args=(), name="STM_read")
         android_read_thread = threading.Thread(target=self.readFromAndroid, args=(), name="android_read")
 
         #set as daemon 
@@ -167,7 +222,7 @@ class RPI(threading.Thread):
         #pc_read_thread.daemon = True
         algo_read_thread.daemon = True
         #STM_send_thread.daemon = True
-        STM_read_thread.daemon = True
+        #STM_read_thread.daemon = True
         #android_send_thread.daemon = True
         android_read_thread.daemon = True
 
@@ -176,7 +231,7 @@ class RPI(threading.Thread):
         algo_read_thread.start()
         #pc_send_thread.start()
         #algo_send_thread.start()
-        STM_read_thread.start()
+        #STM_read_thread.start()
         #STM_send_thread.start()
         android_read_thread.start()
         #android_send_thread.start()
@@ -184,7 +239,7 @@ class RPI(threading.Thread):
     def closeAll(self): #disconnect everything
         self.pc_obj.disconnect()
         self.android_obj.close()
-        self.STM_obj.close()
+        #self.STM_obj.close()
 
 
 
@@ -192,7 +247,8 @@ if __name__ == "__main__":
     main = RPI()
     try:
         main.camera = PiCamera()
-        main.camera.resolution = (640, 640)
+        main.camera.resolution = (480, 480)
+        #main.camera.brightness = 60
         main.start_threads()
         while True:
             pass

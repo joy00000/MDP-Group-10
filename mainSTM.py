@@ -31,10 +31,10 @@ class RPI(threading.Thread):
 
     #Send Function to STM 
     def sendToSTM(self, newmsg):
-        #while True:
-            #msg = input("type:")
-            #msgToSTM = input("msg:" )
-        for msg in newmsg:
+        while True:
+            msg = input("type:")
+            #EmsgToSTM = input("msg:" )
+        #for msg in newmsg:
             self.STM_obj.send(str(msg))
             print("Message sent to STM is " + msg)
             time.sleep(1)

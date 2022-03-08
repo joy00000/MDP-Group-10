@@ -91,10 +91,10 @@ class RPI(threading.Thread):
                     print(self.algoList)
 
                     while self.algoList:
-                        msg = self.algoList[0]
+                        msg = self.algoList[0] 
                         self.algoList = self.algoList[1:]
             
-                        if(msg[0:4] == "MOVE"): #“MOVE, FORWARD” “MOVE, LEFT BACKWARD”
+                        if(msg[0:4] == "MOVE"): 
                             self.currId.append(msg[-1])
                             msg = msg[5:-2]
                             print("sliced:" + msg)
@@ -172,10 +172,11 @@ class RPI(threading.Thread):
                 STMmsg = str(STMmsg)
                 print("Message received from STM is: " + STMmsg)
                 if (STMmsg == "R"):
-                    self.sendToPC("TAKE")
-                    #self.sendToSTM("DONE")
+                    #self.sendToPC("TAKE")
+                    self.sendToSTM("DONE")
                 elif (STMmsg == "D"):
-                    self.sendToPC("STOP")
+                    #self.sendToPC("STOP")
+                    print("STOP: END")
     
     def takePic(self):
         self.camera.start_preview()
@@ -197,7 +198,7 @@ class RPI(threading.Thread):
         #android_send_thread = threading.Thread(target=self.sendToAndroid, args=(), name="android_send")
         
         #read threads for pc, STM and android
-        pc_read_thread = threading.Thread(target=self.readFromPC, args=(), name="pc_read")
+        #pc_read_thread = threading.Thread(target=self.readFromPC, args=(), name="pc_read")
         algo_read_thread = threading.Thread(target=self.readFromAlgo, args=(), name="algo_read")
         STM_read_thread = threading.Thread(target=self.readFromSTM, args=(), name="STM_read")
         #android_read_thread = threading.Thread(target=self.readFromAndroid, args=(), name="android_read")
@@ -205,7 +206,7 @@ class RPI(threading.Thread):
         #set as daemon 
         #pc_send_thread.daemon = True
         #algo_send_thread.daemon = True
-        pc_read_thread.daemon = True
+        #pc_read_thread.daemon = True
         algo_read_thread.daemon = True
         #STM_send_thread.daemon = True
         STM_read_thread.daemon = True
@@ -213,7 +214,7 @@ class RPI(threading.Thread):
         #android_read_thread.daemon = True
 
         #start threads -> dont start send threads!
-        pc_read_thread.start()
+        #pc_read_thread.start()
         algo_read_thread.start()
         #pc_send_thread.start()
         #algo_send_thread.start()
