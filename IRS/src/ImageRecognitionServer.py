@@ -56,7 +56,7 @@ def main():
         startTime = time.time()
         #resizeImage(IMAGE_PATH)
         msg, detectionString = SymbolRec.ProcessSourceImages(IMAGE_PATH, SAVE_PATH, SAVE_RESULTS)
-        print("Detected: " + msg + " | Time taken: " + "{:.2f}s".format(time.time() - startTime))
+        print("Detected: " + detectionString + " | Time taken: " + "{:.2f}s".format(time.time() - startTime))
         modifyInferenceImage(SAVE_PATH, DEBUG_IMAGE, detectionString)
         createInferenceCollage(SAVE_PATH)
     else: serverProcess()
