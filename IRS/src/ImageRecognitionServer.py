@@ -19,14 +19,15 @@ import math
 # Constant PATH variables
 WEIGHT_PATH = "../weights/"
 YOLO_PATH = "../yolov5"
-
 RECEIVER_PATH = "../receivedimg/"
 RECEIVER_FILE_PATH = RECEIVER_PATH + 'out.jpg'
 
 # Other Constants
 ANNOTATION_CLASSES = ['1_blue', '2_green', '3_red', '4_white', '5_yellow', '6_blue', '7_green', '8_red', '9_white', 'a_red', 'b_green', 'bullseye', 'c_white', 'circle_yellow', 'd_blue', 'down_arrow_red', 'e_yellow', 'f_red', 'g_green', 'h_white', 'left_arrow_blue', 'right_arrow_green', 's_blue', 't_yellow', 'u_red', 'up_arrow_white', 'v_green', 'w_white', 'x_blue', 'y_yellow', 'z_red']
-ANNOTATION_ID = {'1_blue': "11",'2_green': "12", '3_red':"13", '4_white':"14", '5_yellow':"15", '6_blue':"16", '7_green':"17", '8_red':"18", '9_white':"19", 'a_red':"20", 'b_green':"21", 'c_white':"22", 'd_blue':"23",  'e_yellow':"24", 'f_red':"25",  'g_green':"26",'h_white':"27",  's_blue':"28", 't_yellow':"29", 'u_red':"30", 'v_green':"31", 'w_white':"32", 'x_blue':"33", 'y_yellow':"34", 'z_red':"35",'up_arrow_white':"36", 'down_arrow_red':"37",'right_arrow_green':"38",'left_arrow_blue':"39", 'circle_yellow':"40"}
 NUM_CLASSES = len(ANNOTATION_CLASSES)
+
+ANNOTATION_ID = {'1_blue': "11", '2_green': "12", '3_red':"13", '4_white':"14", '5_yellow':"15", '6_blue':"16", '7_green':"17", '8_red':"18", '9_white':"19", 'a_red':"20", 'b_green':"21", 'c_white':"22", 'd_blue':"23",  'e_yellow':"24", 'f_red':"25",  'g_green':"26",'h_white':"27",  's_blue':"28", 't_yellow':"29", 'u_red':"30", 'v_green':"31", 'w_white':"32", 'x_blue':"33", 'y_yellow':"34", 'z_red':"35",'up_arrow_white':"36", 'down_arrow_red':"37",'right_arrow_green':"38",'left_arrow_blue':"39", 'circle_yellow':"40", 'bullseye' : "0"}
+
 WEIGHTS = ['e40b16v8best.pt', 'E30_B16_TSv1.pt']
 
 # System Settings
@@ -54,7 +55,6 @@ def main():
 
     if DEBUG_MODE_ON:
         startTime = time.time()
-        #resizeImage(IMAGE_PATH)
         msg, detectionString = SymbolRec.ProcessSourceImages(IMAGE_PATH, SAVE_PATH, SAVE_RESULTS)
         print("Detected: " + detectionString + " | Time taken: " + "{:.2f}s".format(time.time() - startTime))
         modifyInferenceImage(SAVE_PATH, DEBUG_IMAGE, detectionString)
@@ -112,7 +112,6 @@ def receiveImage(sock, RPiMessage):
     print("File Path Set: " + RECEIVER_FILE_PATH)
     # Get image file from RPi over socket connection
     getFileFromRPi(sock, RECEIVER_FILE_PATH)
-    #resizeImage(RECEIVER_FILE_PATH)
 
 def processReceivedImage():
     global SymbolRec
@@ -122,13 +121,6 @@ def processReceivedImage():
     # Send results to RPi
     RPisock.send(bytes(msg, 'utf-8'))
     return detectionString
-
-def resizeImage(ImagePath, ImgResolution = 1080):
-    img = Image.open(ImagePath)
-    WRatio = ImgResolution / img.size[0]
-    # Downscales image while maintaining aspect ratio
-    img = img.resize((ImgResolution, int(img.size[1]*WRatio)), resample = Image.ANTIALIAS)
-    img.save(ImagePath)
 
 def modifyInferenceImage(SAVE_PATH, ImageName, ResultString, FontSize = 25):
     print("\n> Setting Up Image for Collage Later")
@@ -213,12 +205,6 @@ def recvWithTimeout(sock, timeout = 1, enableIdleTimemout = True):
             pass
     sock.setblocking(1) # Make socket blocking once more before returning
     return total_data # Returns a list of bytes
-
-def data_to_str(data):
-    str = ""
-    for i in range(len(data)):
-        str += data[i].decode('utf-8')
-    return str
 
 if __name__ == "__main__":
     main()

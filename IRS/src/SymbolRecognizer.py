@@ -67,7 +67,6 @@ class SymbolRecognizer:
         for i in range(len(coords)):
             y = coords[i][3] - coords[i][1]
             heightList.append(y) # Height of bounding box
-        #print("Height for each detected bound: " + ' '.join([str(Height) for Height in heightList]))
 
         # Get class names for each label
         nameList = []
